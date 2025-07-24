@@ -1,8 +1,73 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 
+// Type definitions
+type SectionColor = 'emerald' | 'blue' | 'violet' | 'slate';
+
+interface Question {
+  id: string;
+  text: string;
+  category: string;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: string;
+  color: SectionColor;
+  questions: Question[];
+}
+
+interface ProgressIndicatorProps {
+  current: number;
+  total: number;
+  sectionTitle: string;
+}
+
+interface SectionOverviewProps {
+  sections: Section[];
+  completedSections: string[];
+  onSectionSelect: (sectionId: string) => void;
+  totalProgress: number;
+}
+
+interface SectionGridProps {
+  sections: Section[];
+  completedSections: string[];
+  currentSectionIndex: number;
+  onSectionSelect: (sectionId: string) => void;
+}
+
+interface QuestionInterfaceProps {
+  section: Section;
+  question: Question;
+  questionIndex: number;
+  totalQuestions: number;
+  onRate: (rating: number) => void;
+  currentRating: number;
+  currentComment: string;
+  onCommentChange: (comment: string) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  canGoNext: boolean;
+  canGoPrevious: boolean;
+  sections: Section[];
+  completedSections: string[];
+  currentSectionIndex: number;
+  onSectionSelect: (sectionId: string) => void;
+}
+
+interface WelcomeScreenProps {
+  onStart: () => void;
+}
+
+interface ThankYouScreenProps {
+  onRestart: () => void;
+}
+
 // Professional data structure
-const feedbackSections = [
+const feedbackSections: Section[] = [
   {
     id: 'doctor',
     title: 'Medical Care',
@@ -63,7 +128,7 @@ const ratingScale = [
 ];
 
 // Sophisticated Progress Component
-const ProgressIndicator = ({ current, total, sectionTitle }) => {
+const ProgressIndicator = ({ current, total, sectionTitle }: ProgressIndicatorProps) => {
   const percentage = (current / total) * 100;
   
   return (
@@ -89,7 +154,7 @@ const ProgressIndicator = ({ current, total, sectionTitle }) => {
 };
 
 // Welcome Screen - Professional Design
-const WelcomeScreen = ({ onStart }) => (
+const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-2xl mx-auto text-center">
@@ -136,7 +201,7 @@ const WelcomeScreen = ({ onStart }) => (
 );
 
 // Section Overview - Dashboard Style
-const SectionOverview = ({ sections, completedSections, onSectionSelect, totalProgress }) => (
+const SectionOverview = ({ sections, completedSections, onSectionSelect, totalProgress }: SectionOverviewProps) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
     <div className="container mx-auto px-6 py-8">
       <div className="max-w-4xl mx-auto">
@@ -178,7 +243,7 @@ const SectionOverview = ({ sections, completedSections, onSectionSelect, totalPr
             return (
               <button
                 key={section.id}
-                onClick={() => onSectionSelect(index)}
+                onClick={() => onSectionSelect(section.id)}
                 className={`p-6 rounded-2xl text-left transition-all duration-300 transform hover:scale-105 shadow-lg ${
                   isCompleted 
                     ? `bg-gradient-to-r ${colorMap[section.color]} border-2` 
@@ -216,8 +281,7 @@ const SectionOverview = ({ sections, completedSections, onSectionSelect, totalPr
   </div>
 );
 
-// Section Grid Component
-const SectionGrid = ({ sections, completedSections, currentSectionIndex, onSectionSelect }) => (
+const SectionGrid = ({ sections, completedSections, currentSectionIndex, onSectionSelect }: SectionGridProps) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
     <h3 className="text-lg font-semibold text-gray-900 mb-4">Survey Sections</h3>
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -234,7 +298,7 @@ const SectionGrid = ({ sections, completedSections, currentSectionIndex, onSecti
         return (
           <button
             key={section.id}
-            onClick={() => onSectionSelect && onSectionSelect(index)}
+            onClick={() => onSectionSelect(section.id)}
             className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
               isCompleted 
                 ? 'border-green-500 bg-green-50' 
@@ -263,8 +327,7 @@ const SectionGrid = ({ sections, completedSections, currentSectionIndex, onSecti
   </div>
 );
 
-// Professional Question Interface
-const QuestionInterface = ({ section, question, questionIndex, totalQuestions, onRate, currentRating, currentComment, onCommentChange, onNext, onPrevious, canGoNext, canGoPrevious, sections, completedSections, currentSectionIndex, onSectionSelect }) => {
+const QuestionInterface = ({ section, question, questionIndex, totalQuestions, onRate, currentRating, currentComment, onCommentChange, onNext, onPrevious, canGoNext, canGoPrevious, sections, completedSections, currentSectionIndex, onSectionSelect }: QuestionInterfaceProps) => {
   const [selectedRating, setSelectedRating] = useState(currentRating);
   const [comment, setComment] = useState(currentComment || '');
   const [showCommentBox, setShowCommentBox] = useState(!!currentRating);
@@ -275,13 +338,13 @@ const QuestionInterface = ({ section, question, questionIndex, totalQuestions, o
     setShowCommentBox(!!currentRating);
   }, [currentRating, currentComment]);
 
-  const handleRatingSelect = (rating) => {
+  const handleRatingSelect = (rating: number) => {
     setSelectedRating(rating);
     onRate(rating);
     setShowCommentBox(true);
   };
 
-  const handleCommentChange = (value) => {
+  const handleCommentChange = (value: string) => {
     setComment(value);
     onCommentChange(value);
   };
@@ -423,7 +486,7 @@ const QuestionInterface = ({ section, question, questionIndex, totalQuestions, o
 };
 
 // Professional Thank You Screen
-const ThankYouScreen = ({ onRestart }) => (
+const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-2xl mx-auto text-center">
@@ -464,9 +527,9 @@ const App = () => {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [comments, setComments] = useState({});
-  const [completedSections, setCompletedSections] = useState([]);
+  const [answers, setAnswers] = useState<Record<string, Record<string, number>>>({});
+  const [comments, setComments] = useState<Record<string, Record<string, string>>>({});
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
 
   const currentSection = feedbackSections[currentSectionIndex];
   const currentQuestion = currentSection?.questions[currentQuestionIndex];
@@ -478,19 +541,25 @@ const App = () => {
     setCurrentScreen('overview');
   };
 
-  const handleSectionSelect = (sectionIndex) => {
-    setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    setCurrentScreen('question');
+  const handleSectionSelect = (sectionId: string) => {
+    const idx = feedbackSections.findIndex(s => s.id === sectionId);
+    if (idx !== -1) {
+      setCurrentSectionIndex(idx);
+      setCurrentQuestionIndex(0);
+      setCurrentScreen('question');
+    }
   };
 
-  const handleSectionJump = (sectionIndex) => {
-    setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    // Stay on the same screen, just switch sections
+  const handleSectionJump = (sectionId: string) => {
+    const idx = feedbackSections.findIndex(s => s.id === sectionId);
+    if (idx !== -1) {
+      setCurrentSectionIndex(idx);
+      setCurrentQuestionIndex(0);
+      // Stay on the same screen, just switch sections
+    }
   };
 
-  const handleRate = (rating) => {
+  const handleRate = (rating: number) => {
     const sectionId = currentSection.id;
     const questionId = currentQuestion.id;
     
@@ -503,7 +572,7 @@ const App = () => {
     }));
   };
 
-  const handleCommentChange = (comment) => {
+  const handleCommentChange = (comment: string) => {
     const sectionId = currentSection.id;
     const questionId = currentQuestion.id;
     
