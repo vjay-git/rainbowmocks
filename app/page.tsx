@@ -1,517 +1,692 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-// Professional data structure
-const feedbackSections = [
-  {
-    id: 'doctor',
-    title: 'Medical Care',
-    subtitle: 'Physician interaction and treatment',
-    icon: '🩺',
-    color: 'emerald',
-    questions: [
-      { id: 'q1', text: 'How would you rate your physician\'s attentiveness and compassion?', category: 'Care Quality' },
-      { id: 'q2', text: 'How clearly did your physician explain your diagnosis and treatment?', category: 'Communication' },
-      { id: 'q3', text: 'How well were you informed about your treatment progress?', category: 'Information' },
-      { id: 'q4', text: 'How effectively was your pain managed during treatment?', category: 'Pain Management' }
-    ]
+// Dynamic Question Types
+const QUESTION_TYPES = {
+  RATING: 'rating',
+  COMMENT: 'comment',
+  RATING_WITH_COMMENT: 'rating_with_comment',
+  MULTIPLE_CHOICE: 'multiple_choice',
+  YES_NO: 'yes_no'
+};
+
+// Sample dynamic data structure
+const sampleFeedbackData = {
+  formType: 'inpatient',
+  title: 'Patient Experience Survey',
+  subtitle: 'Rainbow Children\'s Hospital',
+  sections: [
+    {
+      id: 'medical_care',
+      title: 'Medical Care',
+      icon: '👨‍⚕️',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q1',
+          type: QUESTION_TYPES.RATING_WITH_COMMENT,
+          text: 'How would you rate the quality of medical care you received?',
+          required: true,
+          ratingScale: {
+            min: 1,
+            max: 5,
+            labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          },
+          commentPrompt: 'Please share specific details about your medical care experience'
+        },
+        {
+          id: 'q2',
+          type: QUESTION_TYPES.COMMENT,
+          text: 'What could we have done differently to improve your medical care?',
+          required: false,
+          placeholder: 'Share your suggestions for improvement...',
+          maxLength: 300
+        }
+      ]
+    },
+    {
+      id: 'nursing_care',
+      title: 'Nursing Care',
+      icon: '👩‍⚕️',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'n1',
+          type: QUESTION_TYPES.RATING,
+          text: 'How professional and respectful were the nursing staff?',
+          required: true,
+          ratingScale: {
+            min: 1,
+            max: 5,
+            labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          }
+        },
+        {
+          id: 'n2',
+          type: QUESTION_TYPES.YES_NO,
+          text: 'Did nurses respond to your requests in a timely manner?',
+          required: true
+        }
+      ]
+    },
+    {
+      id: 'facilities',
+      title: 'Hospital Environment',
+      icon: '🏥',
+      color: 'accent',
+      questions: [
+        {
+          id: 'f1',
+          type: QUESTION_TYPES.RATING,
+          text: 'How would you rate the cleanliness of the hospital?',
+          required: true,
+          ratingScale: {
+            min: 1,
+            max: 10,
+            labels: null
+          }
+        }
+      ]
+    }
+  ]
+};
+
+// Clean White & Violet Theme
+const colorThemes: Record<string, {
+  gradient: string;
+  light: string;
+  bg: string;
+  border: string;
+  text: string;
+}> = {
+  primary: {
+    gradient: 'from-violet-500 to-purple-600',
+    light: 'from-violet-50 to-purple-50',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    text: 'text-violet-700'
   },
-  {
-    id: 'nursing',
-    title: 'Nursing Care',
-    subtitle: 'Nursing staff service and support',
-    icon: '👩‍⚕️',
-    color: 'blue',
-    questions: [
-      { id: 'n1', text: 'How professional and respectful were the nursing staff?', category: 'Professionalism' },
-      { id: 'n2', text: 'How promptly did nurses respond to your requests?', category: 'Response Time' },
-      { id: 'n3', text: 'How competent were nurses in performing medical procedures?', category: 'Clinical Skills' }
-    ]
+  secondary: {
+    gradient: 'from-purple-500 to-indigo-600',
+    light: 'from-purple-50 to-indigo-50',
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-700'
   },
-  {
-    id: 'admission',
-    title: 'Admission Process',
-    subtitle: 'Registration and intake experience',
-    icon: '📋',
-    color: 'violet',
-    questions: [
-      { id: 'a1', text: 'How efficient was the admission and registration process?', category: 'Process Efficiency' },
-      { id: 'a2', text: 'How helpful and knowledgeable was the admission staff?', category: 'Staff Support' },
-      { id: 'a3', text: 'How clear and understandable were the admission forms?', category: 'Documentation' }
-    ]
-  },
-  {
-    id: 'facilities',
-    title: 'Facilities & Environment',
-    subtitle: 'Hospital infrastructure and amenities',
-    icon: '🏥',
-    color: 'slate',
-    questions: [
-      { id: 'f1', text: 'How would you rate the cleanliness and comfort of your room?', category: 'Room Quality' },
-      { id: 'f2', text: 'How satisfied were you with the meal quality and dietary services?', category: 'Food Services' },
-      { id: 'f3', text: 'How accessible and well-maintained were the hospital facilities?', category: 'Accessibility' }
-    ]
+  accent: {
+    gradient: 'from-indigo-500 to-violet-600',
+    light: 'from-indigo-50 to-violet-50',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    text: 'text-indigo-700'
   }
-];
+};
 
-const ratingScale = [
-  { value: 1, label: 'Poor', description: 'Well below expectations' },
-  { value: 2, label: 'Fair', description: 'Below expectations' },
-  { value: 3, label: 'Good', description: 'Meets expectations' },
-  { value: 4, label: 'Very Good', description: 'Above expectations' },
-  { value: 5, label: 'Excellent', description: 'Exceeds expectations' }
-];
+// Clean Rating Question
+interface RatingQuestionProps {
+  question: {
+    ratingScale: {
+      min: number;
+      max: number;
+      labels: string[] | null;
+    };
+    [key: string]: any;
+  };
+  value: number;
+  onChange: (value: number) => void;
+}
 
-// Sophisticated Progress Component
-const ProgressIndicator = ({ current, total, sectionTitle }) => {
-  const percentage = (current / total) * 100;
+const RatingQuestion = ({ question, value, onChange }: RatingQuestionProps) => {
+  const { ratingScale } = question;
+  const options = [];
   
+  for (let i = ratingScale.min; i <= ratingScale.max; i++) {
+    options.push({
+      value: i,
+      label: ratingScale.labels ? ratingScale.labels[i - 1] : i.toString()
+    });
+  }
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">{sectionTitle}</h3>
-          <p className="text-sm text-gray-600">Question {current + 1} of {total}</p>
+    <div className="space-y-3">
+      {ratingScale.max <= 5 ? (
+        <div className="grid grid-cols-2 gap-3">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              className={`p-4 rounded-xl transition-all duration-200 border-2 ${
+                value === option.value
+                  ? 'border-violet-500 bg-violet-50 shadow-md transform scale-105'
+                  : 'border-gray-200 hover:border-violet-300 hover:bg-gray-50'
+              }`}
+            >
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-700 mb-1">{option.value}</div>
+                <div className="text-sm font-medium text-gray-600">{option.label}</div>
+                {value === option.value && (
+                  <div className="w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center mx-auto mt-2">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-gray-900">{Math.round(percentage)}%</div>
-          <div className="text-xs text-gray-500">Complete</div>
+      ) : (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-gray-500 mb-2">
+            <span>{ratingScale.min}</span>
+            <span>{ratingScale.max}</span>
+          </div>
+          <div className="flex space-x-1">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => onChange(option.value)}
+                className={`flex-1 h-12 rounded-lg border-2 transition-all duration-200 ${
+                  value === option.value
+                    ? 'border-violet-500 bg-violet-500 text-white'
+                    : 'border-gray-200 hover:border-violet-300 text-gray-600'
+                }`}
+              >
+                {option.value}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
+      )}
     </div>
   );
 };
 
-// Welcome Screen - Professional Design
-const WelcomeScreen = ({ onStart }) => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <div className="container mx-auto px-6 py-12">
-      <div className="max-w-2xl mx-auto text-center">
-        <div className="bg-white rounded-2xl shadow-xl p-12">
-          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8">
-            <span className="text-3xl text-white">🏥</span>
-          </div>
-          
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Patient Experience Survey
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Your feedback helps us deliver exceptional healthcare. This survey takes approximately 5-7 minutes to complete.
-          </p>
-          
-          <div className="bg-gray-50 rounded-xl p-6 mb-8">
-            <div className="grid grid-cols-2 gap-6 text-sm">
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">4 Sections</div>
-                <div className="text-gray-600">Medical Care, Nursing, Admission, Facilities</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">~5 Minutes</div>
-                <div className="text-gray-600">Estimated completion time</div>
-              </div>
-            </div>
-          </div>
-          
-          <button
-            onClick={onStart}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
-          >
-            Begin Survey
-          </button>
-          
-          <p className="text-xs text-gray-500 mt-6">
-            Your responses are confidential and help improve patient care quality.
-          </p>
-        </div>
+// Clean Comment Question
+interface CommentQuestionProps {
+  question: {
+    placeholder?: string;
+    maxLength?: number;
+    required?: boolean;
+    [key: string]: any;
+  };
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const CommentQuestion = ({ question, value, onChange }: CommentQuestionProps) => (
+  <div>
+    <textarea
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={question.placeholder || 'Share your thoughts...'}
+      className="w-full h-24 p-4 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors"
+      maxLength={question.maxLength || 500}
+    />
+    <div className="flex justify-between items-center mt-2">
+      <div className="text-xs text-gray-500">
+        {question.required ? 'Required' : 'Optional'}
+      </div>
+      <div className="text-xs text-gray-400">
+        {(value || '').length}/{question.maxLength || 500}
       </div>
     </div>
   </div>
 );
 
-// Section Overview - Dashboard Style
-const SectionOverview = ({ sections, completedSections, onSectionSelect, totalProgress }) => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <div className="container mx-auto px-6 py-8">
-      <div className="max-w-4xl mx-auto">
-        
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Survey Progress</h1>
-              <p className="text-gray-600">Complete each section at your own pace</p>
-            </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-blue-600">{Math.round(totalProgress)}%</div>
-              <div className="text-sm text-gray-500">Overall Progress</div>
-            </div>
-          </div>
-          
-          <div className="mt-6">
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-1000"
-                style={{ width: `${totalProgress}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Section Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {sections.map((section, index) => {
-            const isCompleted = completedSections.includes(section.id);
-            const colorMap = {
-              emerald: isCompleted ? 'from-green-50 to-green-100 border-green-200' : 'from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
-              blue: isCompleted ? 'from-green-50 to-green-100 border-green-200' : 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-              violet: isCompleted ? 'from-green-50 to-green-100 border-green-200' : 'from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700',
-              slate: isCompleted ? 'from-green-50 to-green-100 border-green-200' : 'from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700'
-            };
-            
-            return (
-              <button
-                key={section.id}
-                onClick={() => onSectionSelect(index)}
-                className={`p-6 rounded-2xl text-left transition-all duration-300 transform hover:scale-105 shadow-lg ${
-                  isCompleted 
-                    ? `bg-gradient-to-r ${colorMap[section.color]} border-2` 
-                    : `bg-gradient-to-r ${colorMap[section.color]} text-white shadow-xl`
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div className={`text-3xl p-3 rounded-xl ${isCompleted ? 'bg-green-200' : 'bg-white/20'}`}>
-                      {section.icon}
-                    </div>
-                    <div>
-                      <h3 className={`text-xl font-bold ${isCompleted ? 'text-green-800' : 'text-white'}`}>
-                        {section.title}
-                      </h3>
-                      <p className={`text-sm ${isCompleted ? 'text-green-600' : 'text-white/80'}`}>
-                        {section.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`text-xl ${isCompleted ? 'text-green-600' : 'text-white'}`}>
-                    {isCompleted ? '✓' : '→'}
-                  </div>
-                </div>
-                
-                <div className={`text-sm ${isCompleted ? 'text-green-700' : 'text-white/90'}`}>
-                  {section.questions.length} questions • {isCompleted ? 'Completed' : 'Pending'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Section Grid Component
-const SectionGrid = ({ sections, completedSections, currentSectionIndex, onSectionSelect }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Survey Sections</h3>
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {sections.map((section, index) => {
-        const isCompleted = completedSections.includes(section.id);
-        const isCurrent = index === currentSectionIndex;
-        const colorMap = {
-          emerald: 'border-emerald-500 bg-emerald-50',
-          blue: 'border-blue-500 bg-blue-50',
-          violet: 'border-violet-500 bg-violet-50',
-          slate: 'border-slate-500 bg-slate-50'
-        };
-        
-        return (
-          <button
-            key={section.id}
-            onClick={() => onSectionSelect && onSectionSelect(index)}
-            className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
-              isCompleted 
-                ? 'border-green-500 bg-green-50' 
-                : isCurrent
-                ? `${colorMap[section.color]} border-2`
-                : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
-            }`}
-          >
-            <div className="flex items-center space-x-2">
-              <span className="text-lg">{section.icon}</span>
-              <div className="flex-1 min-w-0">
-                <div className={`text-sm font-medium truncate ${
-                  isCompleted ? 'text-green-800' : isCurrent ? 'text-gray-900' : 'text-gray-600'
-                }`}>
-                  {section.title}
-                </div>
-              </div>
-              <div className="text-xs">
-                {isCompleted ? '✓' : isCurrent ? '●' : index + 1}
-              </div>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  </div>
-);
-
-// Professional Question Interface
-const QuestionInterface = ({ section, question, questionIndex, totalQuestions, onRate, currentRating, currentComment, onCommentChange, onNext, onPrevious, canGoNext, canGoPrevious, sections, completedSections, currentSectionIndex, onSectionSelect }) => {
-  const [selectedRating, setSelectedRating] = useState(currentRating);
-  const [comment, setComment] = useState(currentComment || '');
-  const [showCommentBox, setShowCommentBox] = useState(!!currentRating);
-
-  useEffect(() => {
-    setSelectedRating(currentRating);
-    setComment(currentComment || '');
-    setShowCommentBox(!!currentRating);
-  }, [currentRating, currentComment]);
-
-  const handleRatingSelect = (rating) => {
-    setSelectedRating(rating);
-    onRate(rating);
-    setShowCommentBox(true);
+// Clean Multiple Choice Question
+interface MultipleChoiceQuestionProps {
+  question: {
+    options: string[];
+    [key: string]: any;
   };
+  value: string;
+  onChange: (value: string) => void;
+}
 
-  const handleCommentChange = (value) => {
-    setComment(value);
-    onCommentChange(value);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-3xl mx-auto">
-          
-          {/* Section Grid at Top */}
-          <SectionGrid 
-            sections={sections}
-            completedSections={completedSections}
-            currentSectionIndex={currentSectionIndex}
-            onSectionSelect={onSectionSelect}
-          />
-          
-          {/* Navigation Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button 
-              onClick={onPrevious} 
-              disabled={!canGoPrevious}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 transition-colors"
-            >
-              <span>←</span>
-              <span>Previous</span>
-            </button>
-            
-            <div className="text-center">
-              <div className="text-sm font-medium text-gray-900">{section.title}</div>
-              <div className="text-xs text-gray-500">{questionIndex + 1} of {totalQuestions}</div>
-            </div>
-            
-            <div className="w-20"></div>
-          </div>
-
-          {/* Progress */}
-          <div className="mb-8">
-            <ProgressIndicator 
-              current={questionIndex} 
-              total={totalQuestions} 
-              sectionTitle={section.title}
-            />
-          </div>
-
-          {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <div className="mb-8">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
-                  {question.category}
-                </span>
-              </div>
-              
-              <h2 className="text-2xl font-semibold text-gray-900 leading-relaxed mb-6">
-                {question.text}
-              </h2>
-            </div>
-
-            {/* Professional Rating Scale */}
-            <div className="space-y-3 mb-8">
-              {ratingScale.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleRatingSelect(option.value)}
-                  className={`w-full p-5 rounded-xl transition-all duration-200 border-2 text-left ${
-                    selectedRating === option.value
-                      ? 'border-blue-500 bg-blue-50 shadow-md'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-4 h-4 rounded-full border-2 transition-colors ${
-                          selectedRating === option.value 
-                            ? 'border-blue-500 bg-blue-500' 
-                            : 'border-gray-300'
-                        }`}>
-                          {selectedRating === option.value && (
-                            <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{option.label}</div>
-                          <div className="text-sm text-gray-600">{option.description}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-400">
-                      {option.value}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Inline Comments */}
-            {showCommentBox && (
-              <div className="border-t pt-6 animate-fade-in">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Additional Comments (Optional)
-                </label>
-                <textarea
-                  value={comment}
-                  onChange={(e) => handleCommentChange(e.target.value)}
-                  placeholder="Please share any specific details about your experience..."
-                  className="w-full h-24 p-4 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm bg-gray-50 focus:bg-white"
-                  maxLength={250}
-                />
-                <div className="flex justify-between items-center mt-2">
-                  <div className="text-xs text-gray-500">
-                    Your comments help us understand your experience better
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {comment.length}/250
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation */}
-          {selectedRating && (
-            <div className="flex justify-end">
-              <button
-                onClick={onNext}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
-              >
-                {questionIndex === totalQuestions - 1 ? 'Complete Section' : 'Next Question'}
-              </button>
+const MultipleChoiceQuestion = ({ question, value, onChange }: MultipleChoiceQuestionProps) => (
+  <div className="space-y-2">
+    {question.options.map((option, index) => (
+      <button
+        key={index}
+        onClick={() => onChange(option)}
+        className={`w-full p-4 text-left rounded-xl transition-all duration-200 border-2 ${
+          value === option
+            ? 'border-violet-500 bg-violet-50 shadow-md'
+            : 'border-gray-200 hover:border-violet-300 hover:bg-gray-50'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-gray-900">{option}</span>
+          {value === option && (
+            <div className="w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs">✓</span>
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-};
+      </button>
+    ))}
+  </div>
+);
 
-// Professional Thank You Screen
-const ThankYouScreen = ({ onRestart }) => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <div className="container mx-auto px-6 py-12">
-      <div className="max-w-2xl mx-auto text-center">
-        <div className="bg-white rounded-2xl shadow-xl p-12">
-          <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-8">
-            <span className="text-3xl text-white">✓</span>
-          </div>
-          
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Thank You
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Your feedback has been successfully submitted. We value your input and will use it to continuously improve our healthcare services.
-          </p>
-          
-          <div className="bg-gray-50 rounded-xl p-6 mb-8">
-            <p className="text-sm text-gray-700">
-              <strong>What happens next?</strong><br/>
-              Your responses will be reviewed by our quality improvement team and incorporated into our ongoing efforts to enhance patient care.
-            </p>
-          </div>
-          
-          <button
-            onClick={onRestart}
-            className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-200"
-          >
-            Submit Another Survey
-          </button>
+// Clean Yes/No Question
+interface YesNoQuestionProps {
+  question: {
+    [key: string]: any;
+  };
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const YesNoQuestion = ({ question, value, onChange }: YesNoQuestionProps) => (
+  <div className="grid grid-cols-2 gap-4">
+    {['Yes', 'No'].map((option) => (
+      <button
+        key={option}
+        onClick={() => onChange(option)}
+        className={`p-4 rounded-xl transition-all duration-200 border-2 ${
+          value === option
+            ? 'border-violet-500 bg-violet-50 shadow-md'
+            : 'border-gray-200 hover:border-violet-300 hover:bg-gray-50'
+        }`}
+      >
+        <div className="text-center">
+          <div className="text-lg font-semibold text-gray-900">{option}</div>
+          {value === option && (
+            <div className="w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center mx-auto mt-2">
+              <span className="text-white text-xs">✓</span>
+            </div>
+          )}
         </div>
+      </button>
+    ))}
+  </div>
+);
+
+// Clean Welcome Screen
+interface WelcomeScreenProps {
+  formData: {
+    title: string;
+    subtitle: string;
+    [key: string]: any;
+  };
+  onStart: () => void;
+}
+
+const WelcomeScreen = ({ formData, onStart }: WelcomeScreenProps) => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <span className="text-2xl text-white">🏥</span>
+      </div>
+      
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        {formData.title}
+      </h1>
+      
+      <h2 className="text-lg font-medium text-violet-600 mb-6">
+        {formData.subtitle}
+      </h2>
+      
+      <p className="text-gray-600 mb-8">
+        Your feedback helps us improve our services and patient care quality.
+      </p>
+      
+      <button
+        onClick={onStart}
+        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+      >
+        Start Survey
+      </button>
+    </div>
+  </div>
+);
+
+// Clean Dashboard
+interface DashboardProps {
+  formData: {
+    subtitle: string;
+    sections: Array<{ id: string; title: string; icon: string; color: string; questions: any[] }>;
+    [key: string]: any;
+  };
+  completedSections: string[];
+  onSectionSelect: (sectionId: string) => void;
+  totalProgress: number;
+}
+
+const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress }: DashboardProps) => (
+  <div className="min-h-screen bg-gray-50 p-4">
+    <div className="max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Survey Progress</h1>
+            <p className="text-violet-600 font-medium">{formData.subtitle}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-violet-600">{Math.round(totalProgress)}%</div>
+            <div className="text-sm text-gray-500">Complete</div>
+          </div>
+        </div>
+        
+        <div className="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            className="bg-gradient-to-r from-violet-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+            style={{ width: `${totalProgress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Section Cards */}
+      <div className="space-y-4">
+        {formData.sections.map((section) => {
+          const isCompleted = completedSections.includes(section.id);
+          const theme = colorThemes[section.color] || colorThemes.primary;
+          
+          return (
+            <button
+              key={section.id}
+              onClick={() => onSectionSelect(section.id)}
+              className={`w-full p-5 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm ${
+                isCompleted 
+                  ? 'bg-green-50 border border-green-200' 
+                  : 'bg-white border border-gray-200 hover:shadow-md hover:border-violet-200'
+              }`}
+            >
+              <div className="flex items-center space-x-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  isCompleted 
+                    ? 'bg-green-100' 
+                    : `bg-gradient-to-r ${theme.gradient}`
+                }`}>
+                  <span className="text-xl text-white">
+                    {isCompleted ? '✓' : section.icon}
+                  </span>
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className={`font-semibold ${isCompleted ? 'text-green-800' : 'text-gray-900'}`}>
+                    {section.title}
+                  </h3>
+                  <p className={`text-sm ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
+                    {section.questions.length} questions • {isCompleted ? 'Completed' : 'Pending'}
+                  </p>
+                </div>
+                <div className="text-gray-400">→</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   </div>
 );
 
-// Main App Component
+// Clean Question Interface
+interface QuestionInterfaceProps {
+  formData: {
+    sections: Array<{ id: string; title: string; icon: string; color: string; questions: any[] }>;
+    [key: string]: any;
+  };
+  section: {
+    id: string;
+    title: string;
+    icon: string;
+    color: string;
+    questions: any[];
+    [key: string]: any;
+  };
+  question: any;
+  questionIndex: number;
+  totalQuestions: number;
+  answers: Record<string, any>;
+  onAnswerChange: (questionId: string, field: string, value: any) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  onDashboard: () => void;
+  canGoPrevious: boolean;
+}
+
+const QuestionInterface = ({ formData, section, question, questionIndex, totalQuestions, answers, onAnswerChange, onNext, onPrevious, onDashboard, canGoPrevious }: QuestionInterfaceProps) => {
+  const theme = colorThemes[section.color] || colorThemes.primary;
+  const progress = ((questionIndex + 1) / totalQuestions) * 100;
+  
+  const handleAnswerChange = (field: string, value: any) => {
+    onAnswerChange(question.id, field, value);
+  };
+
+  const renderQuestionInput = () => {
+    const currentAnswers = answers[question.id] || {};
+    
+    switch (question.type) {
+      case QUESTION_TYPES.RATING:
+        return (
+          <RatingQuestion
+            question={question}
+            value={currentAnswers.rating}
+            onChange={(value) => handleAnswerChange('rating', value)}
+          />
+        );
+      case QUESTION_TYPES.COMMENT:
+        return (
+          <CommentQuestion
+            question={question}
+            value={currentAnswers.comment}
+            onChange={(value) => handleAnswerChange('comment', value)}
+          />
+        );
+      case QUESTION_TYPES.RATING_WITH_COMMENT:
+        return (
+          <div className="space-y-6">
+            <RatingQuestion
+              question={question}
+              value={currentAnswers.rating}
+              onChange={(value) => handleAnswerChange('rating', value)}
+            />
+            {currentAnswers.rating && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {question.commentPrompt || 'Additional Comments (Optional)'}
+                </label>
+                <CommentQuestion
+                  question={question}
+                  value={currentAnswers.comment}
+                  onChange={(value) => handleAnswerChange('comment', value)}
+                />
+              </div>
+            )}
+          </div>
+        );
+      case QUESTION_TYPES.MULTIPLE_CHOICE:
+        return (
+          <MultipleChoiceQuestion
+            question={question}
+            value={currentAnswers.choice}
+            onChange={(value) => handleAnswerChange('choice', value)}
+          />
+        );
+      case QUESTION_TYPES.YES_NO:
+        return (
+          <YesNoQuestion
+            question={question}
+            value={currentAnswers.yesno}
+            onChange={(value) => handleAnswerChange('yesno', value)}
+          />
+        );
+      default:
+        return <div className="text-red-500">Unknown question type: {question.type}</div>;
+    }
+  };
+
+  const isAnswered = () => {
+    const currentAnswers = answers[question.id] || {};
+    if (!question.required) return true;
+    
+    switch (question.type) {
+      case QUESTION_TYPES.RATING:
+        return !!currentAnswers.rating;
+      case QUESTION_TYPES.COMMENT:
+        return !!(currentAnswers.comment || '').trim();
+      case QUESTION_TYPES.RATING_WITH_COMMENT:
+        return !!currentAnswers.rating;
+      case QUESTION_TYPES.MULTIPLE_CHOICE:
+        return !!currentAnswers.choice;
+      case QUESTION_TYPES.YES_NO:
+        return !!currentAnswers.yesno;
+      default:
+        return false;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-lg mx-auto">
+        
+        {/* Navigation Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button 
+            onClick={onDashboard}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm"
+          >
+            <span>←</span>
+            <span>Dashboard</span>
+          </button>
+          
+          <div className="bg-white px-4 py-2 rounded-xl shadow-sm">
+            <div className="text-sm font-medium text-gray-700">
+              {questionIndex + 1} of {totalQuestions}
+            </div>
+          </div>
+          
+          {canGoPrevious && (
+            <button 
+              onClick={onPrevious}
+              className="text-gray-600 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm"
+            >
+              Previous
+            </button>
+          )}
+        </div>
+
+        {/* Section Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r ${theme.gradient}`}>
+              <span className="text-white text-xl">{section.icon}</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
+              <div className="text-sm text-gray-600">{Math.round(progress)}% complete</div>
+            </div>
+          </div>
+          
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-500 bg-gradient-to-r ${theme.gradient}`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 leading-relaxed mb-2">
+              {question.text}
+            </h3>
+            {question.required && (
+              <div className="text-sm text-red-600">* Required</div>
+            )}
+          </div>
+
+          {renderQuestionInput()}
+        </div>
+
+        {/* Navigation */}
+        {isAnswered() && (
+          <button
+            onClick={onNext}
+            className={`w-full font-semibold py-3 px-6 rounded-xl transition-all duration-200 bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white`}
+          >
+            {questionIndex === totalQuestions - 1 ? 'Complete Section' : 'Next Question'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Clean Thank You Screen
+interface ThankYouScreenProps {
+  formData: {
+    subtitle: string;
+    [key: string]: any;
+  };
+  onRestart: () => void;
+}
+
+const ThankYouScreen = ({ formData, onRestart }: ThankYouScreenProps) => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <span className="text-2xl text-white">✓</span>
+      </div>
+      
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">
+        Thank You!
+      </h1>
+      
+      <p className="text-gray-600 mb-8">
+        Your feedback has been submitted successfully. Thank you for helping us improve our services at{' '}
+        <span className="text-violet-600 font-medium">{formData.subtitle}</span>.
+      </p>
+      
+      <button
+        onClick={onRestart}
+        className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+      >
+        New Survey
+      </button>
+    </div>
+  </div>
+);
+
+// Main App
 const App = () => {
+  const [formData] = useState(sampleFeedbackData);
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [comments, setComments] = useState({});
-  const [completedSections, setCompletedSections] = useState([]);
+  const [answers, setAnswers] = useState<Record<string, Record<string, any>>>({});
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
 
-  const currentSection = feedbackSections[currentSectionIndex];
+  const currentSection = formData.sections[currentSectionIndex];
   const currentQuestion = currentSection?.questions[currentQuestionIndex];
   const totalQuestions = currentSection?.questions.length || 0;
   
-  const totalProgress = (completedSections.length / feedbackSections.length) * 100;
+  const totalProgress = (completedSections.length / formData.sections.length) * 100;
 
   const handleStart = () => {
-    setCurrentScreen('overview');
+    setCurrentScreen('dashboard');
   };
 
-  const handleSectionSelect = (sectionIndex) => {
-    setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    setCurrentScreen('question');
+  const handleSectionSelect = (sectionId: string) => {
+    const idx = formData.sections.findIndex(s => s.id === sectionId);
+    if (idx !== -1) {
+      setCurrentSectionIndex(idx);
+      setCurrentQuestionIndex(0);
+      setCurrentScreen('question');
+    }
   };
 
-  const handleSectionJump = (sectionIndex) => {
-    setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    // Stay on the same screen, just switch sections
+  const handleDashboard = () => {
+    setCurrentScreen('dashboard');
   };
 
-  const handleRate = (rating) => {
-    const sectionId = currentSection.id;
-    const questionId = currentQuestion.id;
-    
+  const handleAnswerChange = (questionId: string, field: string, value: any) => {
     setAnswers(prev => ({
       ...prev,
-      [sectionId]: {
-        ...prev[sectionId],
-        [questionId]: rating
-      }
-    }));
-  };
-
-  const handleCommentChange = (comment) => {
-    const sectionId = currentSection.id;
-    const questionId = currentQuestion.id;
-    
-    setComments(prev => ({
-      ...prev,
-      [sectionId]: {
-        ...prev[sectionId],
-        [questionId]: comment
+      [questionId]: {
+        ...prev[questionId],
+        [field]: value
       }
     }));
   };
@@ -525,11 +700,11 @@ const App = () => {
         setCompletedSections(prev => [...prev, sectionId]);
       }
       
-      if (completedSections.length + 1 === feedbackSections.length) {
-        console.log('Complete feedback data:', { answers, comments });
+      if (completedSections.length + 1 === formData.sections.length) {
+        console.log('Complete feedback data:', { formType: formData.formType, answers });
         setCurrentScreen('thankyou');
       } else {
-        setCurrentScreen('overview');
+        setCurrentScreen('dashboard');
       }
     }
   };
@@ -537,8 +712,6 @@ const App = () => {
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
-    } else {
-      setCurrentScreen('overview');
     }
   };
 
@@ -547,33 +720,19 @@ const App = () => {
     setCurrentSectionIndex(0);
     setCurrentQuestionIndex(0);
     setAnswers({});
-    setComments({});
     setCompletedSections([]);
   };
 
-  const getCurrentRating = () => {
-    const sectionId = currentSection?.id;
-    const questionId = currentQuestion?.id;
-    return answers[sectionId]?.[questionId] || 0;
-  };
-
-  const getCurrentComment = () => {
-    const sectionId = currentSection?.id;
-    const questionId = currentQuestion?.id;
-    return comments[sectionId]?.[questionId] || '';
-  };
-
-  const canGoNext = getCurrentRating() > 0;
   const canGoPrevious = currentQuestionIndex > 0;
 
   if (currentScreen === 'welcome') {
-    return <WelcomeScreen onStart={handleStart} />;
+    return <WelcomeScreen formData={formData} onStart={handleStart} />;
   }
 
-  if (currentScreen === 'overview') {
+  if (currentScreen === 'dashboard') {
     return (
-      <SectionOverview
-        sections={feedbackSections}
+      <Dashboard
+        formData={formData}
         completedSections={completedSections}
         onSectionSelect={handleSectionSelect}
         totalProgress={totalProgress}
@@ -584,28 +743,23 @@ const App = () => {
   if (currentScreen === 'question') {
     return (
       <QuestionInterface
+        formData={formData}
         section={currentSection}
         question={currentQuestion}
         questionIndex={currentQuestionIndex}
         totalQuestions={totalQuestions}
-        onRate={handleRate}
-        currentRating={getCurrentRating()}
-        currentComment={getCurrentComment()}
-        onCommentChange={handleCommentChange}
+        answers={answers}
+        onAnswerChange={handleAnswerChange}
         onNext={handleNext}
         onPrevious={handlePrevious}
-        canGoNext={canGoNext}
+        onDashboard={handleDashboard}
         canGoPrevious={canGoPrevious}
-        sections={feedbackSections}
-        completedSections={completedSections}
-        currentSectionIndex={currentSectionIndex}
-        onSectionSelect={handleSectionJump}
       />
     );
   }
 
   if (currentScreen === 'thankyou') {
-    return <ThankYouScreen onRestart={handleRestart} />;
+    return <ThankYouScreen formData={formData} onRestart={handleRestart} />;
   }
 
   return null;
