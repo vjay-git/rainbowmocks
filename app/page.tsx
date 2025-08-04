@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   realQuestionsData, 
   colorThemes, 
@@ -10,11 +10,15 @@ import {
   type ColorThemes 
 } from './api';
 
-// Add Google Fonts
-const fontLink = document.createElement('link');
-fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap';
-fontLink.rel = 'stylesheet';
-document.head.appendChild(fontLink);
+// Load Google Fonts only in the browser
+const loadGoogleFonts = () => {
+  if (typeof document !== 'undefined') {
+    const fontLink = document.createElement('link');
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap';
+    fontLink.rel = 'stylesheet';
+    document.head.appendChild(fontLink);
+  }
+};
 
 // Dynamic Rating Question Component
 const RatingQuestion = ({ question, value, onChange }: {
@@ -426,6 +430,11 @@ const App = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [completedSections, setCompletedSections] = useState<string[]>([]);
+
+  // Load fonts when component mounts
+  useEffect(() => {
+    loadGoogleFonts();
+  }, []);
 
   const currentSection = formData.sections[currentSectionIndex];
   const currentQuestion = currentSection?.questions[currentQuestionIndex];
