@@ -54,11 +54,11 @@ export interface ColorThemes {
   quaternary: ColorTheme;
 }
 
-// Sample patient data
+// Sample patient data for PICU
 export const samplePatient: PatientInfo = {
   name: "BANDELA SIREESHA",
-  unitname: "Rainbow Children's Hospital - Banjara Hills",
-  entrytype: "Inpatient",
+  unitname: "Rainbow Children's Hospital - PICU Banjara Hills",
+  entrytype: "PICU",
   doctorname: "DR.BHARGAVI REDDY K",
   location: "Banjara Hills"
 };
@@ -95,10 +95,10 @@ export const colorThemes: ColorThemes = {
   }
 };
 
-// Survey questions data (IP Questions only)
+// PICU Survey questions data
 export const realQuestionsData: FormData = {
-  formType: 'inpatient',
-  title: 'Patient Experience Survey',
+  formType: 'picu',
+  title: 'PICU Patient Experience Survey',
   subtitle: samplePatient.unitname,
   patientInfo: {
     name: samplePatient.name,
@@ -110,110 +110,152 @@ export const realQuestionsData: FormData = {
   sections: [
     {
       id: 'doctor_care',
-      title: 'Doctor Care',
+      title: 'PICU Doctor Care',
       icon: '👨‍⚕️',
       color: 'primary',
       questions: [
         {
+          id: 'q1',
+          type: 'rating',
+          text: 'Are the PICU doctors caring and friendly?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very much', 'Extremely']
+        },
+        {
+          id: 'q2',
+          type: 'rating',
+          text: 'Did the doctors explain your child\'s condition, treatment, and investigations clearly?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
+        },
+        {
+          id: 'q3',
+          type: 'rating',
+          text: 'Were you informed about the daily plan of management by the doctors?',
+          required: true,
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
+        },
+        {
           id: 'q4',
           type: 'rating',
-          text: 'Was the discharge process completed in a timely manner?',
+          text: 'Were your doubts regarding your child\'s condition clarified?',
           required: true,
-          options: ['Yes', 'No', 'Some delay']
-        },
-        {
-          id: 'q5',
-          type: 'rating',
-          text: 'How attentive and caring was the doctor towards you?',
-          required: true,
-          options: ['Not at all', 'Somewhat', 'Moderately', 'Very attentive']
-        },
-        {
-          id: 'q6',
-          type: 'rating',
-          text: 'Did the doctor clearly explain the reason for your admission?',
-          required: true,
-          options: ['Yes', 'No', 'Partially']
-        },
-        {
-          id: 'q7',
-          type: 'rating',
-          text: 'Did the doctor provide timely updates about your treatment progress?',
-          required: true,
-          options: ['Yes', 'No', 'Sometimes']
+          options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
         }
       ]
     },
     {
       id: 'nursing_care',
-      title: 'Nursing Care',
+      title: 'PICU Nursing Care',
       icon: '👩‍⚕️',
       color: 'secondary',
       questions: [
         {
-          id: 'q14',
+          id: 'q5',
           type: 'rating',
-          text: 'How attentive, prompt, and caring was the nursing staff?',
-          required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-        },
-        {
-          id: 'q15',
-          type: 'rating',
-          text: 'Did the nursing staff respond to your needs promptly?',
+          text: 'Were the nursing staff in the PICU easily accessible and available?',
           required: true,
           options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
         },
         {
-          id: 'q16',
+          id: 'q6',
           type: 'rating',
-          text: 'How professional and respectful was the nursing staff?',
+          text: 'Were the nursing staff prompt in responding to your child\'s needs?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
+        },
+        {
+          id: 'q7',
+          type: 'rating',
+          text: 'Are the PICU nurses caring and compassionate?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very much', 'Extremely']
+        },
+        {
+          id: 'q8',
+          type: 'rating',
+          text: 'Did PICU nurses listen to your opinion about your child\'s needs?',
+          required: true,
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
         }
       ]
     },
     {
-      id: 'facilities',
-      title: 'Hospital Facilities',
-      icon: '🏥',
+      id: 'family_support',
+      title: 'Family & Communication',
+      icon: '👨‍👩‍👧‍👦',
       color: 'accent',
+      questions: [
+        {
+          id: 'q9',
+          type: 'rating',
+          text: 'Did doctors and nurses work together as a team in the PICU?',
+          required: true,
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
+        },
+        {
+          id: 'q10',
+          type: 'rating',
+          text: 'Was support and encouragement given to your family during your child\'s stay?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very much', 'Extremely']
+        },
+        {
+          id: 'q11',
+          type: 'rating',
+          text: 'Did doctors/nurses speak to your child even if he/she could not respond?',
+          required: true,
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
+        },
+        {
+          id: 'q12',
+          type: 'rating',
+          text: 'Did healthcare providers spend enough time at your child\'s bedside?',
+          required: true,
+          options: ['Not enough', 'Somewhat adequate', 'Adequate', 'More than adequate', 'Excellent']
+        }
+      ]
+    },
+    {
+      id: 'facilities_overall',
+      title: 'PICU Facilities & Overall Experience',
+      icon: '🏥',
+      color: 'quaternary',
       questions: [
         {
           id: 'q13',
           type: 'rating',
-          text: 'How clean were your room and washroom during your stay?',
+          text: 'Was your child\'s privacy and confidentiality respected during the PICU stay?',
           required: true,
-          options: ['Very Unclean', 'Unclean', 'Clean', 'Very Clean', 'Spotless']
+          options: ['Never', 'Rarely', 'Sometimes', 'Usually', 'Always']
         },
         {
-          id: 'q22',
+          id: 'q14',
           type: 'rating',
-          text: 'How would you rate your overall hospital experience?',
+          text: 'Was the room quiet enough for your child to rest?',
           required: true,
-          options: ['Very Bad', 'Bad', 'Average', 'Good', 'Excellent']
-        }
-      ]
-    },
-    {
-      id: 'other_services',
-      title: 'Other Services',
-      icon: '🔧',
-      color: 'quaternary',
-      questions: [
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very much', 'Completely']
+        },
         {
-          id: 'q1',
+          id: 'q15',
           type: 'rating',
-          text: 'How would you rate the helpfulness and efficiency of the admission desk staff?',
+          text: 'Was your child\'s bed clean and neat?',
           required: true,
           options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
         },
         {
-          id: 'q23',
+          id: 'q16',
           type: 'rating',
-          text: 'How efficient and helpful was the security staff?',
+          text: 'Are you satisfied with the care given in the PICU?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+        },
+        {
+          id: 'q17',
+          type: 'rating',
+          text: 'Would you recommend this PICU to a friend/family who needs hospitalization?',
+          required: true,
+          options: ['Definitely Not', 'Probably Not', 'Maybe', 'Probably Yes', 'Definitely Yes']
         }
       ]
     }
