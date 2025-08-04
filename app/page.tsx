@@ -513,10 +513,97 @@ const App = () => {
 
   const canGoPrevious = currentQuestionIndex > 0;
 
-  if (currentScreen === 'welcome') {
-    return <WelcomeScreen formData={formData} onStart={handleStart} />;
-  }
+ if (currentScreen === 'welcome') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-violet-400/15 to-purple-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '2s' }}></div>
+          
+          {/* Floating particles */}
+          <div className="absolute top-20 left-8 w-3 h-3 bg-blue-400/40 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-32 right-12 w-2 h-2 bg-indigo-400/50 rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/3 right-20 w-4 h-4 bg-purple-400/30 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
+        </div>
 
+        <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative z-10 transform hover:scale-105 transition-all duration-500">
+          
+          {/* Hospital Icon with enhanced glow effect */}
+          <div className="relative pt-12 pb-8 text-center">
+            <div className="relative inline-block group">
+              <img src="Rainbow-logo.png" alt="Hospital Icon" className="w-27 h-17 object-contain" />
+              
+              
+              {/* Enhanced animated rings */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-24 h-24 border-2 border-purple-300/40 rounded-full animate-ping"></div>
+                <div className="absolute w-28 h-28 border border-indigo-200/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div className="absolute w-32 h-32 border border-purple-200/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Enhanced welcome text with animations */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-slate-800 mb-2 font-poppins tracking-tight animate-fade-in-up">
+              Welcome,
+            </h1>
+            
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-poppins tracking-tight animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              {formData.patientInfo.name}!
+            </h2>
+          </div>
+
+          {/* Enhanced hospital info */}
+          <div className="text-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <p className="text-lg font-semibold bg-gradient-to-r from-violet-700 via-purple-700 to-violet-700 bg-clip-text text-transparent font-inter mb-2">
+              {formData.patientInfo.unit}
+            </p>
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-sm text-gray-500">📍</span>
+              <p className="text-sm text-gray-600 font-medium font-inter">
+                {formData.patientInfo.location}
+              </p>
+            </div>
+          </div>
+          
+          {/* Enhanced description */}
+          <div className="text-center mb-8 px-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <p className="text-slate-600 font-inter leading-relaxed text-sm">
+              Your feedback helps us provide exceptional care and improve our services
+            </p>
+          </div>
+          
+          {/* Enhanced start button */}
+          <div className="px-6 pb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+            <button
+              onClick={handleStart}
+              className="group w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 font-inter tracking-wide text-lg shadow-2xl shadow-violet-500/40 hover:shadow-violet-600/50 hover:scale-105 active:scale-95 relative overflow-hidden"
+            >
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              
+              <div className="relative flex items-center justify-center space-x-2">
+                <span>Start Survey</span>
+                <span className="text-xl">✨</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Decorative bottom elements */}
+          <div className="flex justify-center space-x-2 pb-6">
+            <div className="w-2 h-2 bg-violet-300 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="w-2 h-2 bg-pink-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
+        </div>
+
+        
+      </div>
+    );
+  }
   if (currentScreen === 'dashboard') {
     return (
       <Dashboard
