@@ -118,11 +118,10 @@ const WelcomeScreen = ({ formData, onStart }: {
     <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative z-10 transform hover:scale-105 transition-all duration-500">
       
       {/* Hospital Icon with enhanced glow effect */}
-      <div className="relative pt-12 pb-8 text-center">
-        <div className="relative inline-block group">
-          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl text-white">🏥</span>
-          </div>
+      {/* Hospital Icon with enhanced glow effect */}
+          <div className="relative pt-12 pb-8 text-center">
+            <div className="relative inline-block group">
+              <img src="Rainbow-logo.png" alt="Hospital Icon" className="w-27 h-17 object-contain" />
           
           {/* Enhanced animated rings */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
