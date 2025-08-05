@@ -10,16 +10,6 @@ import {
   type ColorThemes 
 } from './api';
 
-// Load Google Fonts only in the browser
-const loadGoogleFonts = () => {
-  if (typeof document !== 'undefined') {
-    const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap';
-    fontLink.rel = 'stylesheet';
-    document.head.appendChild(fontLink);
-  }
-};
-
 // Dynamic Rating Question Component
 const RatingQuestion = ({ question, value, onChange }: {
   question: Question;
@@ -107,123 +97,256 @@ const CommentQuestion = ({ question, value, onChange }: {
   </div>
 );
 
-// Welcome Screen with Patient Info
+// Welcome Screen
 const WelcomeScreen = ({ formData, onStart }: {
   formData: FormData;
   onStart: () => void;
 }) => (
-  <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 flex items-center justify-center p-4">
-          <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 text-center">
-      <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <span className="text-2xl text-white">🏥</span>
-      </div>
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
+    {/* Animated background elements */}
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-violet-400/15 to-purple-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '2s' }}></div>
       
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 font-poppins tracking-tight">
-        {formData.title}
-      </h1>
-      
-      <h2 className="text-lg font-medium text-violet-600 mb-4 font-inter">
-        {formData.subtitle}
-      </h2>
+      {/* Floating particles */}
+      <div className="absolute top-20 left-8 w-3 h-3 bg-blue-400/40 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute bottom-32 right-12 w-2 h-2 bg-indigo-400/50 rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/3 right-20 w-4 h-4 bg-purple-400/30 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
+    </div>
 
-      {/* Patient Information */}
-      <div className="bg-violet-50 rounded-xl p-4 mb-6 text-left">
-        <h3 className="font-semibold text-violet-800 mb-2 font-inter">Welcome</h3>
-        <div className="space-y-1 text-sm font-inter">
-          <p><span className="font-medium">Patient:</span> {formData.patientInfo.name}</p>
-          <p><span className="font-medium">Type:</span> {formData.patientInfo.entryType}</p>
-          <p><span className="font-medium">Unit:</span> {formData.patientInfo.location}</p>
-          <p><span className="font-medium">Doctor:</span> {formData.patientInfo.doctor}</p>
+    <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative z-10 transform hover:scale-105 transition-all duration-500">
+      
+      {/* Hospital Icon with enhanced glow effect */}
+      <div className="relative pt-12 pb-8 text-center">
+        <div className="relative inline-block group">
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl text-white">🏥</span>
+          </div>
+          
+          {/* Enhanced animated rings */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-24 h-24 border-2 border-purple-300/40 rounded-full animate-ping"></div>
+            <div className="absolute w-28 h-28 border border-indigo-200/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute w-32 h-32 border border-purple-200/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
         </div>
       </div>
       
-      <p className="text-gray-600 mb-8 font-inter leading-relaxed">
-        Your feedback helps us improve our services and patient care quality.
-      </p>
+      {/* Enhanced welcome text with animations */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2 font-poppins tracking-tight animate-fade-in-up">
+          Welcome,
+        </h1>
+        
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-poppins tracking-tight animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          {formData.patientInfo.name}!
+        </h2>
+      </div>
+
+      {/* Enhanced hospital info */}
+      <div className="text-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <p className="text-lg font-semibold bg-gradient-to-r from-violet-700 via-purple-700 to-violet-700 bg-clip-text text-transparent font-inter mb-2">
+          {formData.patientInfo.unit}
+        </p>
+        <div className="flex items-center justify-center space-x-2">
+          <span className="text-sm text-gray-500">📍</span>
+          <p className="text-sm text-gray-600 font-medium font-inter">
+            {formData.patientInfo.location}
+          </p>
+        </div>
+      </div>
       
-      <button
-        onClick={onStart}
-        className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 font-inter tracking-wide"
-      >
-        Start Survey
-      </button>
+      {/* Enhanced description */}
+      <div className="text-center mb-8 px-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+        <p className="text-slate-600 font-inter leading-relaxed text-sm">
+          Your feedback helps us provide exceptional care and improve our services
+        </p>
+      </div>
+      
+      {/* Enhanced start button */}
+      <div className="px-6 pb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+        <button
+          onClick={onStart}
+          className="group w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 font-inter tracking-wide text-lg shadow-2xl shadow-violet-500/40 hover:shadow-violet-600/50 hover:scale-105 active:scale-95 relative overflow-hidden"
+        >
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          
+          <div className="relative flex items-center justify-center space-x-2">
+            <span>Start Survey</span>
+            <span className="text-xl">✨</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Decorative bottom elements */}
+      <div className="flex justify-center space-x-2 pb-6">
+        <div className="w-2 h-2 bg-violet-300 rounded-full animate-pulse"></div>
+        <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+        <div className="w-2 h-2 bg-pink-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
     </div>
   </div>
 );
 
-// Dashboard
+// Paginated Dashboard
 const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress }: {
   formData: FormData;
   completedSections: string[];
   onSectionSelect: (sectionId: string) => void;
   totalProgress: number;
-}) => (
-  <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 p-4">
-    <div className="max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">Survey Progress</h1>
-            <p className="text-violet-600 font-medium font-inter">{formData.patientInfo.name} - {formData.patientInfo.entryType}</p>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold text-violet-600 font-poppins">{Math.round(totalProgress)}%</div>
-            <div className="text-sm text-gray-500 font-inter">Complete</div>
-          </div>
-        </div>
-        
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
-            className="bg-gradient-to-r from-violet-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
-            style={{ width: `${totalProgress}%` }}
-          />
-        </div>
-      </div>
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const sectionsPerPage = 5;
+  const totalPages = Math.ceil(formData.sections.length / sectionsPerPage);
+  
+  const startIndex = (currentPage - 1) * sectionsPerPage;
+  const endIndex = startIndex + sectionsPerPage;
+  const currentSections = formData.sections.slice(startIndex, endIndex);
 
-      {/* Section Cards */}
-      <div className="space-y-4">
-        {formData.sections.map((section) => {
-          const isCompleted = completedSections.includes(section.id);
-          const theme = colorThemes[section.color] || colorThemes.primary;
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handlePageSelect = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 p-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">Survey Progress</h1>
+              <p className="text-violet-600 font-medium font-inter">{formData.patientInfo.name} - {formData.patientInfo.entryType}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-violet-600 font-poppins">{Math.round(totalProgress)}%</div>
+              <div className="text-sm text-gray-500 font-inter">Complete</div>
+            </div>
+          </div>
           
-          return (
-            <button
-              key={section.id}
-              onClick={() => onSectionSelect(section.id)}
-              className={`w-full p-5 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm border ${
-                isCompleted 
-                  ? 'bg-green-50/80 backdrop-blur-sm border-green-200' 
-                  : 'bg-white/80 backdrop-blur-sm border-white/30 hover:shadow-md hover:border-violet-200'
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="bg-gradient-to-r from-violet-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+              style={{ width: `${totalProgress}%` }}
+            />
+          </div>
+          
+          {/* Page indicator */}
+          <div className="flex items-center justify-between mt-4 text-sm text-gray-600 font-inter">
+            <span>Showing {startIndex + 1}-{Math.min(endIndex, formData.sections.length)} of {formData.sections.length} sections</span>
+            <span>Page {currentPage} of {totalPages}</span>
+          </div>
+        </div>
+
+        {/* Section Cards */}
+        <div className="space-y-4 mb-6">
+          {currentSections.map((section) => {
+            const isCompleted = completedSections.includes(section.id);
+            const theme = colorThemes[section.color] || colorThemes.primary;
+            
+            return (
+              <button
+                key={section.id}
+                onClick={() => onSectionSelect(section.id)}
+                className={`w-full p-5 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm border ${
                   isCompleted 
-                    ? 'bg-green-100' 
-                    : `bg-gradient-to-r ${theme.gradient}`
-                }`}>
-                  <span className="text-xl text-white">
-                    {isCompleted ? '✓' : section.icon}
-                  </span>
+                    ? 'bg-green-50/80 backdrop-blur-sm border-green-200' 
+                    : 'bg-white/80 backdrop-blur-sm border-white/30 hover:shadow-md hover:border-violet-200'
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    isCompleted 
+                      ? 'bg-green-100' 
+                      : `bg-gradient-to-r ${theme.gradient}`
+                  }`}>
+                    <span className="text-xl text-white">
+                      {isCompleted ? '✓' : section.icon}
+                    </span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className={`font-semibold font-poppins ${isCompleted ? 'text-green-800' : 'text-gray-900'}`}>
+                      {section.title}
+                    </h3>
+                    <p className={`text-sm font-inter ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
+                      {section.questions.length} questions • {isCompleted ? 'Completed' : 'Pending'}
+                    </p>
+                  </div>
+                  <div className="text-gray-400">→</div>
                 </div>
-                <div className="flex-1 text-left">
-                  <h3 className={`font-semibold font-poppins ${isCompleted ? 'text-green-800' : 'text-gray-900'}`}>
-                    {section.title}
-                  </h3>
-                  <p className={`text-sm font-inter ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
-                    {section.questions.length} questions • {isCompleted ? 'Completed' : 'Pending'}
-                  </p>
-                </div>
-                <div className="text-gray-400">→</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
+            <div className="flex items-center justify-between">
+              {/* Previous Button */}
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-inter ${
+                  currentPage === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-violet-600 hover:bg-violet-50 hover:text-violet-700'
+                }`}
+              >
+                <span>←</span>
+                <span>Previous</span>
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageSelect(page)}
+                    className={`w-10 h-10 rounded-lg transition-all duration-200 font-inter ${
+                      page === currentPage
+                        ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
-            </button>
-          );
-        })}
+
+              {/* Next Button */}
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-inter ${
+                  currentPage === totalPages
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-violet-600 hover:bg-violet-50 hover:text-violet-700'
+                }`}
+              >
+                <span>Next</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Question Interface
 const QuestionInterface = ({ 
@@ -431,11 +554,6 @@ const App = () => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [completedSections, setCompletedSections] = useState<string[]>([]);
 
-  // Load fonts when component mounts
-  useEffect(() => {
-    loadGoogleFonts();
-  }, []);
-
   const currentSection = formData.sections[currentSectionIndex];
   const currentQuestion = currentSection?.questions[currentQuestionIndex];
   const totalQuestions = currentSection?.questions.length || 0;
@@ -513,97 +631,10 @@ const App = () => {
 
   const canGoPrevious = currentQuestionIndex > 0;
 
- if (currentScreen === 'welcome') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-violet-400/15 to-purple-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '2s' }}></div>
-          
-          {/* Floating particles */}
-          <div className="absolute top-20 left-8 w-3 h-3 bg-blue-400/40 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-32 right-12 w-2 h-2 bg-indigo-400/50 rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/3 right-20 w-4 h-4 bg-purple-400/30 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
-        </div>
-
-        <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative z-10 transform hover:scale-105 transition-all duration-500">
-          
-          {/* Hospital Icon with enhanced glow effect */}
-          <div className="relative pt-12 pb-8 text-center">
-            <div className="relative inline-block group">
-              <img src="Rainbow-logo.png" alt="Hospital Icon" className="w-27 h-17 object-contain" />
-              
-              
-              {/* Enhanced animated rings */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-24 h-24 border-2 border-purple-300/40 rounded-full animate-ping"></div>
-                <div className="absolute w-28 h-28 border border-indigo-200/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <div className="absolute w-32 h-32 border border-purple-200/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Enhanced welcome text with animations */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2 font-poppins tracking-tight animate-fade-in-up">
-              Welcome,
-            </h1>
-            
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-poppins tracking-tight animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              {formData.patientInfo.name}!
-            </h2>
-          </div>
-
-          {/* Enhanced hospital info */}
-          <div className="text-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <p className="text-lg font-semibold bg-gradient-to-r from-violet-700 via-purple-700 to-violet-700 bg-clip-text text-transparent font-inter mb-2">
-              {formData.patientInfo.unit}
-            </p>
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-sm text-gray-500">📍</span>
-              <p className="text-sm text-gray-600 font-medium font-inter">
-                {formData.patientInfo.location}
-              </p>
-            </div>
-          </div>
-          
-          {/* Enhanced description */}
-          <div className="text-center mb-8 px-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <p className="text-slate-600 font-inter leading-relaxed text-sm">
-              Your feedback helps us provide exceptional care and improve our services
-            </p>
-          </div>
-          
-          {/* Enhanced start button */}
-          <div className="px-6 pb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-            <button
-              onClick={handleStart}
-              className="group w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 font-inter tracking-wide text-lg shadow-2xl shadow-violet-500/40 hover:shadow-violet-600/50 hover:scale-105 active:scale-95 relative overflow-hidden"
-            >
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              
-              <div className="relative flex items-center justify-center space-x-2">
-                <span>Start Survey</span>
-                <span className="text-xl">✨</span>
-              </div>
-            </button>
-          </div>
-
-          {/* Decorative bottom elements */}
-          <div className="flex justify-center space-x-2 pb-6">
-            <div className="w-2 h-2 bg-violet-300 rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="w-2 h-2 bg-pink-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-          </div>
-        </div>
-
-        
-      </div>
-    );
+  if (currentScreen === 'welcome') {
+    return <WelcomeScreen formData={formData} onStart={handleStart} />;
   }
+
   if (currentScreen === 'dashboard') {
     return (
       <Dashboard

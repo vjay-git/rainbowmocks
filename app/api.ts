@@ -54,7 +54,7 @@ export interface ColorThemes {
   quaternary: ColorTheme;
 }
 
-// Sample patient data for PICU
+// Sample patient data
 export const samplePatient: PatientInfo = {
   name: "BANDELA SIREESHA",
   unitname: "Rainbow Children's Hospital - PICU Banjara Hills",
@@ -95,7 +95,7 @@ export const colorThemes: ColorThemes = {
   }
 };
 
-// PICU Survey questions data
+// Survey questions data
 export const realQuestionsData: FormData = {
   formType: 'picu',
   title: 'PICU Patient Experience Survey',
@@ -107,265 +107,265 @@ export const realQuestionsData: FormData = {
     doctor: samplePatient.doctorname,
     location: samplePatient.location
   },
-sections: [
-  {
-    id: 'billing',
-    title: 'Billing',
-    icon: '💳',
-    color: 'primary',
-    questions: [
-      {
-        id: 'q1',
-        type: 'rating',
-        text: 'How would you rate the helpfulness and efficiency of the admission desk staff?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      }
-    ]
-  },
-  {
-    id: 'discharge',
-    title: 'Discharge',
-    icon: '🚪',
-    color: 'secondary',
-    questions: [
-      {
-        id: 'q2',
-        type: 'rating',
-        text: 'How clear and informative was the financial counselling you received?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q3',
-        type: 'rating',
-        text: 'Did the doctor or nurse explain your discharge summary clearly?',
-        required: true,
-        options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
-      }
-    ]
-  },
-  {
-    id: 'doctor',
-    title: 'Doctor',
-    icon: '👨‍⚕️',
-    color: 'accent',
-    questions: [
-      {
-        id: 'q4',
-        type: 'rating',
-        text: 'Was the discharge process completed in a timely manner?',
-        required: true,
-        options: ['Yes', 'No', 'Some delay']
-      },
-      {
-        id: 'q5',
-        type: 'rating',
-        text: 'How attentive and caring was the doctor towards you?',
-        required: true,
-        options: ['Not at all', 'Somewhat', 'Moderately', 'Very attentive']
-      },
-      {
-        id: 'q6',
-        type: 'rating',
-        text: 'Did the doctor clearly explain the reason for your admission?',
-        required: true,
-        options: ['Yes', 'No', 'Partially']
-      },
-      {
-        id: 'q7',
-        type: 'rating',
-        text: 'Did the doctor provide timely updates about your treatment progress?',
-        required: true,
-        options: ['Yes', 'No', 'Sometimes']
-      }
-    ]
-  },
-  {
-    id: 'floor_coordinator',
-    title: 'Floor Co-Ordinator',
-    icon: '👥',
-    color: 'quaternary',
-    questions: [
-      {
-        id: 'q8',
-        type: 'rating',
-        text: 'Did the doctor manage your pain in a timely manner?',
-        required: true,
-        options: ['Yes', 'No', 'Partially']
-      }
-    ]
-  },
-  {
-    id: 'food_beverages',
-    title: 'Food & Beverages',
-    icon: '🍽️',
-    color: 'primary',
-    questions: [
-      {
-        id: 'q9',
-        type: 'rating',
-        text: 'How attentive, helpful, and informative was the floor coordinator?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q10',
-        type: 'rating',
-        text: 'How was the quality of the food served to you?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q11',
-        type: 'rating',
-        text: 'Was your food served on time?',
-        required: true,
-        options: ['Always', 'Sometimes', 'Rarely', 'Never']
-      }
-    ]
-  },
-  {
-    id: 'dietician_counselling',
-    title: 'Dietician Counselling',
-    icon: '📋',
-    color: 'secondary',
-    questions: [
-      {
-        id: 'q12',
-        type: 'rating',
-        text: 'Did you receive dietician counselling during your stay?',
-        required: true,
-        options: ['Yes', 'No']
-      }
-    ]
-  },
-  {
-    id: 'housekeeping',
-    title: 'Housekeeping',
-    icon: '🧹',
-    color: 'accent',
-    questions: [
-      {
-        id: 'q13',
-        type: 'rating',
-        text: 'How clean were your room and washroom during your stay?',
-        required: true,
-        options: ['Very Unclean', 'Unclean', 'Clean', 'Very Clean', 'Spotless']
-      }
-    ]
-  },
-  {
-    id: 'nursing',
-    title: 'Nursing',
-    icon: '👩‍⚕️',
-    color: 'quaternary',
-    questions: [
-      {
-        id: 'q14',
-        type: 'rating',
-        text: 'How attentive, prompt, and caring was the nursing staff?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q15',
-        type: 'rating',
-        text: 'Did you receive your medication on time?',
-        required: true,
-        options: ['Always', 'Sometimes', 'Rarely', 'Never']
-      },
-      {
-        id: 'q16',
-        type: 'rating',
-        text: 'Was your privacy and confidentiality respected during your stay?',
-        required: true,
-        options: ['Yes', 'No', 'Somewhat']
-      }
-    ]
-  },
-  {
-    id: 'opd',
-    title: 'OPD',
-    icon: '🏥',
-    color: 'primary',
-    questions: [
-      {
-        id: 'q17',
-        type: 'rating',
-        text: 'How reasonable was your waiting time to see the doctor in the OPD?',
-        required: true,
-        options: ['Very Unreasonable', 'Unreasonable', 'Reasonable', 'Very Reasonable']
-      }
-    ]
-  },
-  {
-    id: 'other_services',
-    title: 'Other Services',
-    icon: '🔬',
-    color: 'secondary',
-    questions: [
-      {
-        id: 'q18',
-        type: 'rating',
-        text: 'How would you rate the radiology services you received?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q19',
-        type: 'rating',
-        text: 'How would you rate the laboratory services you used?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q20',
-        type: 'rating',
-        text: 'How would you rate the physiotherapy services?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      },
-      {
-        id: 'q21',
-        type: 'rating',
-        text: 'Was the prescribed medicine available at the pharmacy?',
-        required: true,
-        options: ['Yes', 'No', 'Partially']
-      }
-    ]
-  },
-  {
-    id: 'overall_hospital_experience',
-    title: 'Overall Hospital Experience',
-    icon: '⭐',
-    color: 'accent',
-    questions: [
-      {
-        id: 'q22',
-        type: 'rating',
-        text: 'How would you rate your overall hospital experience?',
-        required: true,
-        options: ['Very Bad', 'Bad', 'Average', 'Good', 'Excellent']
-      }
-    ]
-  },
-  {
-    id: 'security',
-    title: 'Security',
-    icon: '🛡️',
-    color: 'quaternary',
-    questions: [
-      {
-        id: 'q23',
-        type: 'rating',
-        text: 'How efficient and helpful was the security staff?',
-        required: true,
-        options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-      }
-    ]
-  }
-]
+  sections: [
+    {
+      id: 'billing',
+      title: 'Billing',
+      icon: '💳',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q1',
+          type: 'rating',
+          text: 'How would you rate the helpfulness and efficiency of the admission desk staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        }
+      ]
+    },
+    {
+      id: 'discharge',
+      title: 'Discharge',
+      icon: '🚪',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q2',
+          type: 'rating',
+          text: 'How clear and informative was the financial counselling you received?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q3',
+          type: 'rating',
+          text: 'Did the doctor or nurse explain your discharge summary clearly?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
+        }
+      ]
+    },
+    {
+      id: 'doctor',
+      title: 'Doctor',
+      icon: '👨‍⚕️',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q4',
+          type: 'rating',
+          text: 'Was the discharge process completed in a timely manner?',
+          required: true,
+          options: ['Yes', 'No', 'Some delay']
+        },
+        {
+          id: 'q5',
+          type: 'rating',
+          text: 'How attentive and caring was the doctor towards you?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very attentive']
+        },
+        {
+          id: 'q6',
+          type: 'rating',
+          text: 'Did the doctor clearly explain the reason for your admission?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        },
+        {
+          id: 'q7',
+          type: 'rating',
+          text: 'Did the doctor provide timely updates about your treatment progress?',
+          required: true,
+          options: ['Yes', 'No', 'Sometimes']
+        }
+      ]
+    },
+    {
+      id: 'floor_coordinator',
+      title: 'Floor Co-Ordinator',
+      icon: '👥',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q8',
+          type: 'rating',
+          text: 'Did the doctor manage your pain in a timely manner?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        }
+      ]
+    },
+    {
+      id: 'food_beverages',
+      title: 'Food & Beverages',
+      icon: '🍽️',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q9',
+          type: 'rating',
+          text: 'How attentive, helpful, and informative was the floor coordinator?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q10',
+          type: 'rating',
+          text: 'How was the quality of the food served to you?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q11',
+          type: 'rating',
+          text: 'Was your food served on time?',
+          required: true,
+          options: ['Always', 'Sometimes', 'Rarely', 'Never']
+        }
+      ]
+    },
+    {
+      id: 'dietician_counselling',
+      title: 'Dietician Counselling',
+      icon: '📋',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q12',
+          type: 'rating',
+          text: 'Did you receive dietician counselling during your stay?',
+          required: true,
+          options: ['Yes', 'No']
+        }
+      ]
+    },
+    {
+      id: 'housekeeping',
+      title: 'Housekeeping',
+      icon: '🧹',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q13',
+          type: 'rating',
+          text: 'How clean were your room and washroom during your stay?',
+          required: true,
+          options: ['Very Unclean', 'Unclean', 'Clean', 'Very Clean', 'Spotless']
+        }
+      ]
+    },
+    {
+      id: 'nursing',
+      title: 'Nursing',
+      icon: '👩‍⚕️',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q14',
+          type: 'rating',
+          text: 'How attentive, prompt, and caring was the nursing staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q15',
+          type: 'rating',
+          text: 'Did you receive your medication on time?',
+          required: true,
+          options: ['Always', 'Sometimes', 'Rarely', 'Never']
+        },
+        {
+          id: 'q16',
+          type: 'rating',
+          text: 'Was your privacy and confidentiality respected during your stay?',
+          required: true,
+          options: ['Yes', 'No', 'Somewhat']
+        }
+      ]
+    },
+    {
+      id: 'opd',
+      title: 'OPD',
+      icon: '🏥',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q17',
+          type: 'rating',
+          text: 'How reasonable was your waiting time to see the doctor in the OPD?',
+          required: true,
+          options: ['Very Unreasonable', 'Unreasonable', 'Reasonable', 'Very Reasonable']
+        }
+      ]
+    },
+    {
+      id: 'other_services',
+      title: 'Other Services',
+      icon: '🔬',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q18',
+          type: 'rating',
+          text: 'How would you rate the radiology services you received?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q19',
+          type: 'rating',
+          text: 'How would you rate the laboratory services you used?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q20',
+          type: 'rating',
+          text: 'How would you rate the physiotherapy services?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q21',
+          type: 'rating',
+          text: 'Was the prescribed medicine available at the pharmacy?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        }
+      ]
+    },
+    {
+      id: 'overall_hospital_experience',
+      title: 'Overall Hospital Experience',
+      icon: '⭐',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q22',
+          type: 'rating',
+          text: 'How would you rate your overall hospital experience?',
+          required: true,
+          options: ['Very Bad', 'Bad', 'Average', 'Good', 'Excellent']
+        }
+      ]
+    },
+    {
+      id: 'security',
+      title: 'Security',
+      icon: '🛡️',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q23',
+          type: 'rating',
+          text: 'How efficient and helpful was the security staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        }
+      ]
+    }
+  ]
 };
 
 // API functions for future integration
