@@ -1,73 +1,461 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { 
-  realQuestionsData, 
-  colorThemes, 
-  apiService,
-  type FormData,
-  type Section,
-  type Question,
-  type ColorThemes 
-} from './api';
 
-// Dynamic Rating Question Component
-const RatingQuestion = ({ question, value, onChange }: {
-  question: Question;
-  value: string;
-  onChange: (value: string) => void;
+// Types
+interface Question {
+  id: string;
+  type: 'rating' | 'comment';
+  text: string;
+  required: boolean;
+  options?: string[];
+  placeholder?: string;
+  maxLength?: number;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  icon: string;
+  color: 'primary' | 'secondary' | 'accent' | 'quaternary';
+  questions: Question[];
+}
+
+interface FormData {
+  formType: string;
+  title: string;
+  subtitle: string;
+  patientInfo: {
+    name: string;
+    entryType: string;
+    unit: string;
+    doctor: string;
+    location: string;
+  };
+  sections: Section[];
+}
+
+// Data
+const getStarRatingForOption = (option: string): number => {
+  // Map different text options to star ratings (1-5)
+  const ratingMap: Record<string, number> = {
+    // Standard quality ratings
+    'Poor': 1,
+    'Fair': 2,
+    'Good': 3,
+    'Very Good': 4,
+    'Excellent': 5,
+
+    // Frequency ratings
+    'Never': 1,
+    'Rarely': 2,
+    'Sometimes': 3,
+    'Always': 5,
+
+    // Cleanliness ratings
+    'Very Unclean': 1,
+    'Unclean': 2,
+    'Clean': 3,
+    'Very Clean': 4,
+    'Spotless': 5,
+
+    // Experience ratings
+    'Very Bad': 1,
+    'Bad': 2,
+    'Average': 3,
+    // 'Excellent': 5, // Duplicate, already defined above
+
+    // Explanation ratings
+    'Not at all': 1,
+    'Somewhat': 2,
+    'Mostly': 4,
+    'Completely': 5,
+
+    // Attentiveness ratings
+    'Moderately': 3,
+    'Very attentive': 5,
+
+    // Waiting time ratings
+    'Very Unreasonable': 1,
+    'Unreasonable': 2,
+    'Reasonable': 4,
+    'Very Reasonable': 5,
+
+    // Yes/No/Partial ratings
+    'No': 1,
+    'Partially': 3,
+    'Yes': 5,
+    'Some delay': 2
+  };
+  
+  return ratingMap[option] || 3; // Default to 3 if not found
+};
+
+const getOptionForStarRating = (rating: number, options: string[]): string => {
+  // Find the option that maps to this star rating
+  for (const option of options) {
+    if (getStarRatingForOption(option) === rating) {
+      return option;
+    }
+  }
+  return options[rating - 1] || options[0]; // Fallback
+};
+
+const ratingLabels = {
+  1: 'Poor',
+  2: 'Fair', 
+  3: 'Good',
+  4: 'Very Good',
+  5: 'Excellent'
+};
+
+const colorThemes = {
+  primary: {
+    gradient: 'from-violet-500 to-purple-600',
+    light: 'from-violet-50 to-purple-50',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    text: 'text-violet-700'
+  },
+  secondary: {
+    gradient: 'from-purple-500 to-indigo-600',
+    light: 'from-purple-50 to-indigo-50',
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-700'
+  },
+  accent: {
+    gradient: 'from-indigo-500 to-violet-600',
+    light: 'from-indigo-50 to-violet-50',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    text: 'text-indigo-700'
+  },
+  quaternary: {
+    gradient: 'from-blue-500 to-indigo-600',
+    light: 'from-blue-50 to-indigo-50',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    text: 'text-blue-700'
+  }
+};
+
+const realQuestionsData: FormData = {
+  formType: 'picu',
+  title: 'PICU Patient Experience Survey',
+  subtitle: "Rainbow Children's Hospital - PICU Banjara Hills",
+  patientInfo: {
+    name: "BANDELA SIREESHA",
+    entryType: "PICU",
+    unit: "Rainbow Children's Hospital - PICU Banjara Hills",
+    doctor: "DR.BHARGAVI REDDY K",
+    location: "Banjara Hills"
+  },
+  sections: [
+    {
+      id: 'billing',
+      title: 'Billing',
+      icon: '💳',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q1',
+          type: 'rating',
+          text: 'How would you rate the helpfulness and efficiency of the admission desk staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        }
+      ]
+    },
+    {
+      id: 'discharge',
+      title: 'Discharge',
+      icon: '🚪',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q2',
+          type: 'rating',
+          text: 'How clear and informative was the financial counselling you received?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q3',
+          type: 'rating',
+          text: 'Did the doctor or nurse explain your discharge summary clearly?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
+        }
+      ]
+    },
+    {
+      id: 'doctor',
+      title: 'Doctor',
+      icon: '👨‍⚕️',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q4',
+          type: 'rating',
+          text: 'Was the discharge process completed in a timely manner?',
+          required: true,
+          options: ['Yes', 'No', 'Some delay']
+        },
+        {
+          id: 'q5',
+          type: 'rating',
+          text: 'How attentive and caring was the doctor towards you?',
+          required: true,
+          options: ['Not at all', 'Somewhat', 'Moderately', 'Very attentive']
+        },
+        {
+          id: 'q6',
+          type: 'rating',
+          text: 'Did the doctor clearly explain the reason for your admission?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        },
+        {
+          id: 'q7',
+          type: 'rating',
+          text: 'Did the doctor provide timely updates about your treatment progress?',
+          required: true,
+          options: ['Yes', 'No', 'Sometimes']
+        }
+      ]
+    },
+    {
+      id: 'floor_coordinator',
+      title: 'Floor Co-Ordinator',
+      icon: '👥',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q8',
+          type: 'rating',
+          text: 'Did the doctor manage your pain in a timely manner?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        }
+      ]
+    },
+    {
+      id: 'food_beverages',
+      title: 'Food & Beverages',
+      icon: '🍽️',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q9',
+          type: 'rating',
+          text: 'How attentive, helpful, and informative was the floor coordinator?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q10',
+          type: 'rating',
+          text: 'How was the quality of the food served to you?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q11',
+          type: 'rating',
+          text: 'Was your food served on time?',
+          required: true,
+          options: ['Always', 'Sometimes', 'Rarely', 'Never']
+        }
+      ]
+    },
+    {
+      id: 'dietician_counselling',
+      title: 'Dietician Counselling',
+      icon: '📋',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q12',
+          type: 'rating',
+          text: 'Did you receive dietician counselling during your stay?',
+          required: true,
+          options: ['Yes', 'No']
+        }
+      ]
+    },
+    {
+      id: 'housekeeping',
+      title: 'Housekeeping',
+      icon: '🧹',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q13',
+          type: 'rating',
+          text: 'How clean were your room and washroom during your stay?',
+          required: true,
+          options: ['Very Unclean', 'Unclean', 'Clean', 'Very Clean', 'Spotless']
+        }
+      ]
+    },
+    {
+      id: 'nursing',
+      title: 'Nursing',
+      icon: '👩‍⚕️',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q14',
+          type: 'rating',
+          text: 'How attentive, prompt, and caring was the nursing staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q15',
+          type: 'rating',
+          text: 'Did you receive your medication on time?',
+          required: true,
+          options: ['Always', 'Sometimes', 'Rarely', 'Never']
+        },
+        {
+          id: 'q16',
+          type: 'rating',
+          text: 'Was your privacy and confidentiality respected during your stay?',
+          required: true,
+          options: ['Yes', 'No', 'Somewhat']
+        }
+      ]
+    },
+    {
+      id: 'opd',
+      title: 'OPD',
+      icon: '🏥',
+      color: 'primary',
+      questions: [
+        {
+          id: 'q17',
+          type: 'rating',
+          text: 'How reasonable was your waiting time to see the doctor in the OPD?',
+          required: true,
+          options: ['Very Unreasonable', 'Unreasonable', 'Reasonable', 'Very Reasonable']
+        }
+      ]
+    },
+    {
+      id: 'other_services',
+      title: 'Other Services',
+      icon: '🔬',
+      color: 'secondary',
+      questions: [
+        {
+          id: 'q18',
+          type: 'rating',
+          text: 'How would you rate the radiology services you received?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q19',
+          type: 'rating',
+          text: 'How would you rate the laboratory services you used?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q20',
+          type: 'rating',
+          text: 'How would you rate the physiotherapy services?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        },
+        {
+          id: 'q21',
+          type: 'rating',
+          text: 'Was the prescribed medicine available at the pharmacy?',
+          required: true,
+          options: ['Yes', 'No', 'Partially']
+        }
+      ]
+    },
+    {
+      id: 'overall_hospital_experience',
+      title: 'Overall Hospital Experience',
+      icon: '⭐',
+      color: 'accent',
+      questions: [
+        {
+          id: 'q22',
+          type: 'rating',
+          text: 'How would you rate your overall hospital experience?',
+          required: true,
+          options: ['Very Bad', 'Bad', 'Average', 'Good', 'Excellent']
+        }
+      ]
+    },
+    {
+      id: 'security',
+      title: 'Security',
+      icon: '🛡️',
+      color: 'quaternary',
+      questions: [
+        {
+          id: 'q23',
+          type: 'rating',
+          text: 'How efficient and helpful was the security staff?',
+          required: true,
+          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+        }
+      ]
+    }
+  ]
+};
+
+// Star Rating Component
+const StarRating = ({ rating, onRatingChange, options, size = 'lg' }: {
+  rating: number;
+  onRatingChange: (rating: number, option: string) => void;
+  options: string[];
+  size?: 'sm' | 'md' | 'lg';
 }) => {
-  const options = question.options || [];
+  const [hoverRating, setHoverRating] = useState(0);
+  
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12'
+  };
+
+  const handleStarClick = (starRating: number) => {
+    const selectedOption = getOptionForStarRating(starRating, options);
+    onRatingChange(starRating, selectedOption);
+  };
 
   return (
-    <div className="space-y-3">
-      {options.length <= 5 ? (
-        <div className="grid grid-cols-2 gap-3">
-          {options.map((option, index) => (
-            <button
-              key={option}
-              onClick={() => onChange(option)}
-              className={`p-4 rounded-xl transition-all duration-200 border-2 ${
-                value === option
-                  ? 'border-violet-500 bg-violet-50 shadow-md transform scale-105'
-                  : 'border-gray-200 hover:border-violet-300 hover:bg-gray-50'
-              }`}
-            >
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-700 mb-1 font-poppins">{index + 1}</div>
-                <div className="text-sm font-medium text-gray-600 font-inter">{option}</div>
-                {value === option && (
-                  <div className="w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center mx-auto mt-2">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {options.map((option, index) => (
-            <button
-              key={option}
-              onClick={() => onChange(option)}
-              className={`w-full p-4 text-left rounded-xl transition-all duration-200 border-2 ${
-                value === option
-                  ? 'border-violet-500 bg-violet-50 shadow-md'
-                  : 'border-gray-200 hover:border-violet-300 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900 font-inter">{option}</span>
-                {value === option && (
-                  <div className="w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex space-x-2 justify-center items-center">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          className={`${sizeClasses[size]} transition-all duration-300 transform active:scale-90 focus:outline-none touch-manipulation`}
+          onMouseEnter={() => setHoverRating(star)}
+          onMouseLeave={() => setHoverRating(0)}
+          onClick={() => handleStarClick(star)}
+          style={{ WebkitTapHighlightColor: 'transparent' }}
+        >
+          <svg
+            className={`w-full h-full transition-all duration-300 ${
+              star <= (hoverRating || rating)
+                ? 'text-yellow-400 drop-shadow-lg scale-110'
+                : 'text-gray-300'
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        </button>
+      ))}
     </div>
   );
 };
@@ -78,21 +466,22 @@ const CommentQuestion = ({ question, value, onChange }: {
   value: string;
   onChange: (value: string) => void;
 }) => (
-  <div>
+  <div className="space-y-3">
     <textarea
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       placeholder={question.placeholder || 'Share your thoughts...'}
-      className="w-full h-24 p-4 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors font-inter"
+      className="w-full h-28 p-4 border-2 border-gray-200 rounded-2xl resize-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all duration-200 text-base"
       maxLength={question.maxLength || 500}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
     />
-    <div className="flex justify-between items-center mt-2">
-      <div className="text-xs text-gray-500 font-inter">
+    <div className="flex justify-between items-center text-sm">
+      <span className={`${question.required ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
         {question.required ? 'Required' : 'Optional'}
-      </div>
-      <div className="text-xs text-gray-400 font-inter">
+      </span>
+      <span className="text-gray-400">
         {(value || '').length}/{question.maxLength || 500}
-      </div>
+      </span>
     </div>
   </div>
 );
@@ -102,157 +491,97 @@ const WelcomeScreen = ({ formData, onStart }: {
   formData: FormData;
   onStart: () => void;
 }) => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
-    {/* Animated background elements */}
-    <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-violet-400/15 to-purple-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '2s' }}></div>
-      
-      {/* Floating particles */}
-      <div className="absolute top-20 left-8 w-3 h-3 bg-blue-400/40 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute bottom-32 right-12 w-2 h-2 bg-indigo-400/50 rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute top-1/3 right-20 w-4 h-4 bg-purple-400/30 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
-    </div>
-
-    <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative z-10 transform hover:scale-105 transition-all duration-500">
-      
-      {/* Hospital Icon with enhanced glow effect */}
-      {/* Hospital Icon with enhanced glow effect */}
+  <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="w-full max-w-sm mx-auto">
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
+        
+         {/* Hospital Icon with enhanced glow effect */}
           <div className="relative pt-12 pb-8 text-center">
             <div className="relative inline-block group">
               <img src="Rainbow-logo.png" alt="Hospital Icon" className="w-27 h-17 object-contain" />
-          
-          {/* Enhanced animated rings */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-24 h-24 border-2 border-purple-300/40 rounded-full animate-ping"></div>
-            <div className="absolute w-28 h-28 border border-indigo-200/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="absolute w-32 h-32 border border-purple-200/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            </div>
+          </div>
+
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Welcome,
+          </h1>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            {formData.patientInfo.name}!
+          </h2>
+        </div>
+
+        <div className="mb-8 space-y-2">
+          <p className="text-base font-semibold text-violet-700">
+            {formData.patientInfo.unit}
+          </p>
+          <div className="flex items-center justify-center space-x-2">
+            <span className="text-gray-500">📍</span>
+            <p className="text-sm text-gray-600">
+              {formData.patientInfo.location}
+            </p>
           </div>
         </div>
-      </div>
-      
-      {/* Enhanced welcome text with animations */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2 font-poppins tracking-tight animate-fade-in-up">
-          Welcome,
-        </h1>
         
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-poppins tracking-tight animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          {formData.patientInfo.name}!
-        </h2>
-      </div>
-
-      {/* Enhanced hospital info */}
-      <div className="text-center mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-        <p className="text-lg font-semibold bg-gradient-to-r from-violet-700 via-purple-700 to-violet-700 bg-clip-text text-transparent font-inter mb-2">
-          {formData.patientInfo.unit}
-        </p>
-        <div className="flex items-center justify-center space-x-2">
-          <span className="text-sm text-gray-500">📍</span>
-          <p className="text-sm text-gray-600 font-medium font-inter">
-            {formData.patientInfo.location}
+        <div className="mb-8">
+          <p className="text-gray-600 text-sm leading-relaxed">
+            Your feedback helps us provide exceptional care and improve our services
           </p>
         </div>
-      </div>
-      
-      {/* Enhanced description */}
-      <div className="text-center mb-8 px-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-        <p className="text-slate-600 font-inter leading-relaxed text-sm">
-          Your feedback helps us provide exceptional care and improve our services
-        </p>
-      </div>
-      
-      {/* Enhanced start button */}
-      <div className="px-6 pb-8 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+        
         <button
           onClick={onStart}
-          className="group w-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 font-inter tracking-wide text-lg shadow-2xl shadow-violet-500/40 hover:shadow-violet-600/50 hover:scale-105 active:scale-95 relative overflow-hidden"
+          className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-lg shadow-lg hover:shadow-xl active:scale-95 touch-manipulation"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          
-          <div className="relative flex items-center justify-center space-x-2">
+          <div className="flex items-center justify-center space-x-2">
             <span>Start Survey</span>
-            <span className="text-xl">✨</span>
+            <span>✨</span>
           </div>
         </button>
-      </div>
-
-      {/* Decorative bottom elements */}
-      <div className="flex justify-center space-x-2 pb-6">
-        <div className="w-2 h-2 bg-violet-300 rounded-full animate-pulse"></div>
-        <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-        <div className="w-2 h-2 bg-pink-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
     </div>
   </div>
 );
 
-// Paginated Dashboard
+// Dashboard
 const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress }: {
   formData: FormData;
   completedSections: string[];
   onSectionSelect: (sectionId: string) => void;
   totalProgress: number;
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const sectionsPerPage = 5;
-  const totalPages = Math.ceil(formData.sections.length / sectionsPerPage);
-  
-  const startIndex = (currentPage - 1) * sectionsPerPage;
-  const endIndex = startIndex + sectionsPerPage;
-  const currentSections = formData.sections.slice(startIndex, endIndex);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handlePageSelect = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">Survey Progress</h1>
-              <p className="text-violet-600 font-medium font-inter">{formData.patientInfo.name} - {formData.patientInfo.entryType}</p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-violet-600 font-poppins">{Math.round(totalProgress)}%</div>
-              <div className="text-sm text-gray-500 font-inter">Complete</div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
+      <div className="max-w-md mx-auto space-y-4">
+        
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-white/50 p-6">
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-bold text-gray-900">Survey Progress</h1>
+            <p className="text-violet-600 text-sm font-medium">{formData.patientInfo.name}</p>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-violet-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
-              style={{ width: `${totalProgress}%` }}
-            />
-          </div>
-          
-          {/* Page indicator */}
-          <div className="flex items-center justify-between mt-4 text-sm text-gray-600 font-inter">
-            <span>Showing {startIndex + 1}-{Math.min(endIndex, formData.sections.length)} of {formData.sections.length} sections</span>
-            <span>Page {currentPage} of {totalPages}</span>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-2xl font-bold text-violet-600">{Math.round(totalProgress)}%</span>
+              <span className="text-sm text-gray-500">Complete</span>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-violet-500 to-purple-600 h-3 rounded-full transition-all duration-1000"
+                style={{ width: `${totalProgress}%` }}
+              />
+            </div>
+            
+            <p className="text-center text-sm text-gray-600">
+              {completedSections.length} of {formData.sections.length} sections completed
+            </p>
           </div>
         </div>
 
-        {/* Section Cards */}
-        <div className="space-y-4 mb-6">
-          {currentSections.map((section) => {
+        <div className="space-y-3">
+          {formData.sections.map((section) => {
             const isCompleted = completedSections.includes(section.id);
             const theme = colorThemes[section.color] || colorThemes.primary;
             
@@ -260,11 +589,12 @@ const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress
               <button
                 key={section.id}
                 onClick={() => onSectionSelect(section.id)}
-                className={`w-full p-5 rounded-xl transition-all duration-200 hover:scale-105 shadow-sm border ${
+                className={`w-full p-4 rounded-2xl transition-all duration-200 shadow-sm border touch-manipulation active:scale-95 ${
                   isCompleted 
-                    ? 'bg-green-50/80 backdrop-blur-sm border-green-200' 
-                    : 'bg-white/80 backdrop-blur-sm border-white/30 hover:shadow-md hover:border-violet-200'
+                    ? 'bg-green-50/90 backdrop-blur-xl border-green-200' 
+                    : 'bg-white/90 backdrop-blur-xl border-white/50 hover:shadow-md'
                 }`}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 <div className="flex items-center space-x-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -272,74 +602,30 @@ const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress
                       ? 'bg-green-100' 
                       : `bg-gradient-to-r ${theme.gradient}`
                   }`}>
-                    <span className="text-xl text-white">
+                    <span className="text-xl">
                       {isCompleted ? '✓' : section.icon}
                     </span>
                   </div>
                   <div className="flex-1 text-left">
-                    <h3 className={`font-semibold font-poppins ${isCompleted ? 'text-green-800' : 'text-gray-900'}`}>
+                    <h3 className={`font-semibold ${isCompleted ? 'text-green-800' : 'text-gray-900'}`}>
                       {section.title}
                     </h3>
-                    <p className={`text-sm font-inter ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
+                    <p className={`text-sm ${isCompleted ? 'text-green-600' : 'text-gray-500'}`}>
                       {section.questions.length} questions • {isCompleted ? 'Completed' : 'Pending'}
                     </p>
                   </div>
-                  <div className="text-gray-400">→</div>
+                  <div className="text-gray-400 text-lg">→</div>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
-            <div className="flex items-center justify-between">
-              {/* Previous Button */}
-              <button
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-inter ${
-                  currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-violet-600 hover:bg-violet-50 hover:text-violet-700'
-                }`}
-              >
-                <span>←</span>
-                <span>Previous</span>
-              </button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center space-x-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageSelect(page)}
-                    className={`w-10 h-10 rounded-lg transition-all duration-200 font-inter ${
-                      page === currentPage
-                        ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md'
-                        : 'text-gray-600 hover:bg-violet-50 hover:text-violet-700'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-
-              {/* Next Button */}
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-inter ${
-                  currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-violet-600 hover:bg-violet-50 hover:text-violet-700'
-                }`}
-              >
-                <span>Next</span>
-                <span>→</span>
-              </button>
-            </div>
+        {totalProgress === 100 && (
+          <div className="bg-green-50/90 backdrop-blur-xl rounded-2xl border border-green-200 p-6 text-center">
+            <div className="text-4xl mb-3">🎉</div>
+            <h3 className="text-lg font-bold text-green-800 mb-2">Survey Completed!</h3>
+            <p className="text-green-600 text-sm">Thank you for your valuable feedback.</p>
           </div>
         )}
       </div>
@@ -347,123 +633,89 @@ const Dashboard = ({ formData, completedSections, onSectionSelect, totalProgress
   );
 };
 
-// Question Interface
-const QuestionInterface = ({ 
+// Section Interface
+const SectionInterface = ({ 
   formData, 
   section, 
-  question, 
-  questionIndex, 
-  totalQuestions, 
   answers, 
   onAnswerChange, 
-  onNext, 
-  onPrevious, 
-  onDashboard, 
-  canGoPrevious 
+  onComplete, 
+  onDashboard
 }: {
   formData: FormData;
   section: Section;
-  question: Question;
-  questionIndex: number;
-  totalQuestions: number;
   answers: Record<string, any>;
   onAnswerChange: (questionId: string, field: string, value: string) => void;
-  onNext: () => void;
-  onPrevious: () => void;
+  onComplete: () => void;
   onDashboard: () => void;
-  canGoPrevious: boolean;
 }) => {
   const theme = colorThemes[section.color] || colorThemes.primary;
-  const progress = ((questionIndex + 1) / totalQuestions) * 100;
   
-  const handleAnswerChange = (field: string, value: string) => {
-    onAnswerChange(question.id, field, value);
+  const handleAnswerChange = (questionId: string, field: string, value: string) => {
+    onAnswerChange(questionId, field, value);
   };
 
-  const renderQuestionInput = () => {
-    const currentAnswers = answers[question.id] || {};
-    
-    if (question.type === 'rating') {
-      return (
-        <div className="space-y-6">
-          <RatingQuestion
-            question={question}
-            value={currentAnswers.rating}
-            onChange={(value) => handleAnswerChange('rating', value)}
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
-              Additional Comments (Optional)
-            </label>
-            <CommentQuestion
-              question={{ ...question, required: false }}
-              value={currentAnswers.comment}
-              onChange={(value) => handleAnswerChange('comment', value)}
-            />
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <CommentQuestion
-        question={question}
-        value={currentAnswers.comment}
-        onChange={(value) => handleAnswerChange('comment', value)}
-      />
-    );
+  const getAnsweredCount = () => {
+    return section.questions.filter(question => {
+      const currentAnswers = answers[question.id] || {};
+      if (question.type === 'rating') {
+        const selectedOption = currentAnswers.option;
+        if (!selectedOption) return false;
+        
+        const rating = getStarRatingForOption(selectedOption);
+        // If rating is below 3, comment is required
+        if (rating > 0 && rating < 3) {
+          return !!(currentAnswers.comment || '').trim();
+        }
+        return true;
+      }
+      return question.required ? !!(currentAnswers.comment || '').trim() : true;
+    }).length;
   };
 
-  const isAnswered = () => {
-    const currentAnswers = answers[question.id] || {};
-    if (!question.required) return true;
-    
-    if (question.type === 'rating') {
-      return !!currentAnswers.rating;
-    }
-    
-    return !!(currentAnswers.comment || '').trim();
+  const isComplete = () => {
+    return section.questions.every(question => {
+      const currentAnswers = answers[question.id] || {};
+      if (question.type === 'rating') {
+        const selectedOption = currentAnswers.option;
+        if (!selectedOption) return false;
+        
+        const rating = getStarRatingForOption(selectedOption);
+        // If rating is below 3, comment is required
+        if (rating > 0 && rating < 3) {
+          return !!(currentAnswers.comment || '').trim();
+        }
+        return true;
+      }
+      return question.required ? !!(currentAnswers.comment || '').trim() : true;
+    });
   };
+
+  const progress = (getAnsweredCount() / section.questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 p-4">
-      <div className="max-w-lg mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-md mx-auto">
         
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button 
-            onClick={onDashboard}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors bg-white/80 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-xl shadow-sm font-inter"
-          >
-            <span>←</span>
-            <span>Dashboard</span>
-          </button>
-          
-          <div className="bg-white/80 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-xl shadow-sm">
-            <div className="text-sm font-medium text-gray-700 font-inter">
-              {questionIndex + 1} of {totalQuestions}
-            </div>
-          </div>
-          
-          {canGoPrevious && (
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-white/50 p-4">
+          <div className="flex items-center justify-between mb-4">
             <button 
-              onClick={onPrevious}
-              className="text-gray-600 hover:text-gray-900 transition-colors bg-white/80 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-xl shadow-sm font-inter"
+              onClick={onDashboard}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors bg-white/80 border border-gray-200 px-3 py-2 rounded-xl active:scale-95 touch-manipulation"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              Previous
+              <span>←</span>
+              <span className="text-sm">Back</span>
             </button>
-          )}
-        </div>
+          </div>
 
-        {/* Section Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
-          <div className="flex items-center space-x-4 mb-4">
+          <div className="flex items-center space-x-3 mb-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r ${theme.gradient}`}>
               <span className="text-white text-xl">{section.icon}</span>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 font-poppins tracking-tight">{section.title}</h2>
-              <div className="text-sm text-gray-600 font-inter">{Math.round(progress)}% complete</div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-900">{section.title}</h2>
+              <div className="text-sm text-gray-600">{getAnsweredCount()}/{section.questions.length} answered</div>
             </div>
           </div>
           
@@ -475,88 +727,292 @@ const QuestionInterface = ({
           </div>
         </div>
 
-        {/* Question Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 leading-relaxed mb-2 font-poppins">
-              {question.text}
-            </h3>
-            {question.required && (
-              <div className="text-sm text-red-600 font-inter">* Required</div>
-            )}
-          </div>
+        <div className="p-4 space-y-6 pb-32">
+          {section.questions.map((question, index) => {
+            const currentAnswers = answers[question.id] || {};
+            const selectedOption = currentAnswers.option;
+            const currentRating = selectedOption ? getStarRatingForOption(selectedOption) : 0;
+            
+            return (
+              <div key={question.id} className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-white/50 p-6">
+                <div className="mb-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-base font-semibold text-gray-900 leading-relaxed flex-1 pr-2">
+                      {index + 1}. {question.text}
+                    </h3>
+                    {question.required && (
+                      <span className="text-red-500 text-sm">*</span>
+                    )}
+                  </div>
+                </div>
 
-          {renderQuestionInput()}
+                {question.type === 'rating' ? (
+                  <div className="space-y-6">
+                    <div className="text-center space-y-4">
+                      <StarRating
+                        rating={currentRating}
+                        options={question.options || []}
+                        onRatingChange={(rating, option) => handleAnswerChange(question.id, 'option', option)}
+                        size="lg"
+                      />
+                      
+                      {selectedOption && (
+                        <div className="animate-fadeIn">
+                          <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
+                            currentRating <= 2 
+                              ? 'bg-red-100 text-red-700'
+                              : currentRating === 3
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}>
+                            {selectedOption}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {currentRating > 0 && currentRating < 3 && (
+                      <div className="animate-slideDown">
+                        <label className="block text-sm font-medium text-orange-700 mb-3">
+                          Please tell us how we can improve
+                        </label>
+                        <CommentQuestion
+                          question={{ 
+                            ...question, 
+                            required: true, 
+                            placeholder: 'Please share specific details about what went wrong and how we can improve...' 
+                          }}
+                          value={currentAnswers.comment}
+                          onChange={(value) => handleAnswerChange(question.id, 'comment', value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <CommentQuestion
+                    question={question}
+                    value={currentAnswers.comment}
+                    onChange={(value) => handleAnswerChange(question.id, 'comment', value)}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Navigation */}
-        {isAnswered() && (
-          <button
-            onClick={onNext}
-            className={`w-full font-semibold py-3 px-6 rounded-xl transition-all duration-200 bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-inter tracking-wide`}
-          >
-            {questionIndex === totalQuestions - 1 ? 'Complete Section' : 'Next Question'}
-          </button>
+        {isComplete() && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-white/50 p-4">
+            <div className="max-w-md mx-auto">
+              <button
+                onClick={onComplete}
+                className={`w-full font-bold py-4 px-6 rounded-2xl transition-all duration-200 bg-gradient-to-r ${theme.gradient} text-white shadow-lg hover:shadow-xl active:scale-95 touch-manipulation`}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <span>Complete {section.title}</span>
+                  <span>✓</span>
+                </div>
+              </button>
+            </div>
+          </div>
         )}
+
       </div>
     </div>
   );
 };
 
-// Thank You Screen with Patient Info
+// Thank You Screen
 const ThankYouScreen = ({ formData, onRestart }: {
   formData: FormData;
   onRestart: () => void;
 }) => (
-  <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-violet-100 flex items-center justify-center p-4">
-    <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 text-center">
-      <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <span className="text-2xl text-white">✓</span>
-      </div>
-      
-      <h1 className="text-3xl font-bold text-gray-900 mb-4 font-poppins tracking-tight">
-        Thank You, {formData.patientInfo.name}!
-      </h1>
-      
-      {/* Patient Info Summary */}
-      <div className="bg-green-50 rounded-xl p-4 mb-6 text-left">
-        <h3 className="font-semibold text-green-800 mb-2 font-inter">Survey Completed</h3>
-        <div className="space-y-1 text-sm text-green-700 font-inter">
-          <p><span className="font-medium">Patient:</span> {formData.patientInfo.name}</p>
-          <p><span className="font-medium">Type:</span> {formData.patientInfo.entryType}</p>
-          <p><span className="font-medium">Unit:</span> {formData.patientInfo.location}</p>
-          <p><span className="font-medium">Doctor:</span> {formData.patientInfo.doctor}</p>
+  <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="w-full max-w-sm mx-auto">
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
+        
+        <div className="mb-8">
+          <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+            <span className="text-3xl">✓</span>
+          </div>
+        </div>
+        
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Thank You, {formData.patientInfo.name}!
+        </h1>
+        
+        <div className="bg-green-50/80 rounded-2xl p-4 mb-6 text-left">
+          <h3 className="font-semibold text-green-800 mb-3 flex items-center text-sm">
+            <span className="mr-2">📋</span>
+            Survey Completed
+          </h3>
+          <div className="space-y-2 text-xs text-green-700">
+            <div className="flex justify-between">
+              <span className="font-medium">Patient:</span> 
+              <span className="text-right">{formData.patientInfo.name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Type:</span> 
+              <span>{formData.patientInfo.entryType}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Unit:</span> 
+              <span className="text-right">{formData.patientInfo.location}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Doctor:</span> 
+              <span className="text-right">{formData.patientInfo.doctor}</span>
+            </div>
+            <div className="border-t border-green-200 pt-2 mt-3">
+              <div className="flex justify-between font-medium">
+                <span>Sections:</span> 
+                <span>{formData.sections.length}/{formData.sections.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+          Your feedback has been submitted successfully and will help us improve our services. Thank you for taking the time to share your experience.
+        </p>
+        
+        <div className="space-y-4">
+          <button
+            onClick={onRestart}
+            className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 active:scale-95 touch-manipulation"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            Start New Survey
+          </button>
+          
+          <div className="text-xs text-gray-400">
+            Survey ID: {Date.now().toString(36).toUpperCase()}
+          </div>
         </div>
       </div>
-      
-      <p className="text-gray-600 mb-8 font-inter leading-relaxed">
-        Your feedback has been submitted successfully. Thank you for helping us improve our services at{' '}
-        <span className="text-violet-600 font-medium">{formData.patientInfo.unit}</span>.
-      </p>
-      
-      <button
-        onClick={onRestart}
-        className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 font-inter tracking-wide"
-      >
-        New Survey
-      </button>
     </div>
   </div>
 );
 
+// API Service
+const apiService = {
+  async submitSurveyResponses(data: {
+    patient: any;
+    formType: string;
+    answers: Record<string, any>;
+  }): Promise<{ success: boolean; message: string; surveyId?: string }> {
+    console.log('Survey submitted:', data);
+    
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ 
+          success: true, 
+          message: 'Survey submitted successfully',
+          surveyId: Date.now().toString(36).toUpperCase()
+        });
+      }, 1000);
+    });
+  }
+};
+
+// Global Styles Component
+const GlobalStyles = () => {
+  useEffect(() => {
+    const styles = `
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+          max-height: 0;
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          max-height: 200px;
+        }
+      }
+
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .animate-slideDown {
+        animation: slideDown 0.4s ease-out;
+      }
+
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      input, textarea, button {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      .touch-manipulation {
+        touch-action: manipulation;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 2px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+    `;
+
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+
+    return () => {
+      if (document.head.contains(styleSheet)) {
+        document.head.removeChild(styleSheet);
+      }
+    };
+  }, []);
+
+  return null;
+};
+
 // Main App
 const App = () => {
   const [formData] = useState<FormData>(realQuestionsData);
-  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'dashboard' | 'question' | 'thankyou'>('welcome');
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'dashboard' | 'section' | 'thankyou'>('welcome');
+  const [currentSectionId, setCurrentSectionId] = useState<string>('');
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [completedSections, setCompletedSections] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentSection = formData.sections[currentSectionIndex];
-  const currentQuestion = currentSection?.questions[currentQuestionIndex];
-  const totalQuestions = currentSection?.questions.length || 0;
-  
+  const currentSection = formData.sections.find(s => s.id === currentSectionId);
   const totalProgress = (completedSections.length / formData.sections.length) * 100;
 
   const handleStart = () => {
@@ -564,12 +1020,8 @@ const App = () => {
   };
 
   const handleSectionSelect = (sectionId: string) => {
-    const idx = formData.sections.findIndex(s => s.id === sectionId);
-    if (idx !== -1) {
-      setCurrentSectionIndex(idx);
-      setCurrentQuestionIndex(0);
-      setCurrentScreen('question');
-    }
+    setCurrentSectionId(sectionId);
+    setCurrentScreen('section');
   };
 
   const handleDashboard = () => {
@@ -586,88 +1038,82 @@ const App = () => {
     }));
   };
 
-  const handleNext = async () => {
-    if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      const sectionId = currentSection.id;
-      if (!completedSections.includes(sectionId)) {
-        setCompletedSections(prev => [...prev, sectionId]);
-      }
-      
-      if (completedSections.length + 1 === formData.sections.length) {
-        // Submit survey data using API service
-        try {
-          const result = await apiService.submitSurveyResponses({ 
-            patient: formData.patientInfo,
-            formType: formData.formType, 
-            answers 
-          });
-          console.log('Survey submission result:', result);
-        } catch (error) {
-          console.error('Error submitting survey:', error);
-        }
-        setCurrentScreen('thankyou');
-      } else {
-        setCurrentScreen('dashboard');
-      }
+  const handleSectionComplete = async () => {
+    if (!currentSection) return;
+    
+    const sectionId = currentSection.id;
+    if (!completedSections.includes(sectionId)) {
+      setCompletedSections(prev => [...prev, sectionId]);
     }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+    
+    if (completedSections.length + 1 === formData.sections.length) {
+      setIsSubmitting(true);
+      try {
+        const result = await apiService.submitSurveyResponses({ 
+          patient: formData.patientInfo,
+          formType: formData.formType, 
+          answers 
+        });
+        console.log('Survey submission result:', result);
+        setCurrentScreen('thankyou');
+      } catch (error) {
+        console.error('Error submitting survey:', error);
+        setCurrentScreen('thankyou');
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      setCurrentScreen('dashboard');
     }
   };
 
   const handleRestart = () => {
     setCurrentScreen('welcome');
-    setCurrentSectionIndex(0);
-    setCurrentQuestionIndex(0);
+    setCurrentSectionId('');
     setAnswers({});
     setCompletedSections([]);
+    setIsSubmitting(false);
   };
 
-  const canGoPrevious = currentQuestionIndex > 0;
-
-  if (currentScreen === 'welcome') {
-    return <WelcomeScreen formData={formData} onStart={handleStart} />;
-  }
-
-  if (currentScreen === 'dashboard') {
+  if (isSubmitting) {
     return (
-      <Dashboard
-        formData={formData}
-        completedSections={completedSections}
-        onSectionSelect={handleSectionSelect}
-        totalProgress={totalProgress}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 p-8 text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-violet-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Submitting...</h2>
+          <p className="text-gray-600 text-sm">Please wait while we save your feedback</p>
+        </div>
+      </div>
     );
   }
 
-  if (currentScreen === 'question') {
-    return (
-      <QuestionInterface
-        formData={formData}
-        section={currentSection}
-        question={currentQuestion}
-        questionIndex={currentQuestionIndex}
-        totalQuestions={totalQuestions}
-        answers={answers}
-        onAnswerChange={handleAnswerChange}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        onDashboard={handleDashboard}
-        canGoPrevious={canGoPrevious}
-      />
-    );
-  }
-
-  if (currentScreen === 'thankyou') {
-    return <ThankYouScreen formData={formData} onRestart={handleRestart} />;
-  }
-
-  return null;
+  return (
+    <>
+      <GlobalStyles />
+      {currentScreen === 'welcome' && <WelcomeScreen formData={formData} onStart={handleStart} />}
+      {currentScreen === 'dashboard' && (
+        <Dashboard
+          formData={formData}
+          completedSections={completedSections}
+          onSectionSelect={handleSectionSelect}
+          totalProgress={totalProgress}
+        />
+      )}
+      {currentScreen === 'section' && currentSection && (
+        <SectionInterface
+          formData={formData}
+          section={currentSection}
+          answers={answers}
+          onAnswerChange={handleAnswerChange}
+          onComplete={handleSectionComplete}
+          onDashboard={handleDashboard}
+        />
+      )}
+      {currentScreen === 'thankyou' && <ThankYouScreen formData={formData} onRestart={handleRestart} />}
+    </>
+  );
 };
 
 export default App;

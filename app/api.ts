@@ -95,6 +95,15 @@ export const colorThemes: ColorThemes = {
   }
 };
 
+// Rating labels
+export const ratingLabels = {
+  1: 'Poor',
+  2: 'Fair', 
+  3: 'Good',
+  4: 'Very Good',
+  5: 'Excellent'
+};
+
 // Survey questions data
 export const realQuestionsData: FormData = {
   formType: 'picu',
@@ -110,7 +119,7 @@ export const realQuestionsData: FormData = {
   sections: [
     {
       id: 'billing',
-      title: 'Billing',
+      title: 'Billing & Admission',
       icon: '💳',
       color: 'primary',
       questions: [
@@ -119,13 +128,21 @@ export const realQuestionsData: FormData = {
           type: 'rating',
           text: 'How would you rate the helpfulness and efficiency of the admission desk staff?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
+        },
+        {
+          id: 'q1_comment',
+          type: 'comment',
+          text: 'Any specific feedback about the admission process?',
+          required: false,
+          placeholder: 'Share your experience with the admission process...',
+          maxLength: 300
         }
       ]
     },
     {
       id: 'discharge',
-      title: 'Discharge',
+      title: 'Discharge Process',
       icon: '🚪',
       color: 'secondary',
       questions: [
@@ -134,130 +151,63 @@ export const realQuestionsData: FormData = {
           type: 'rating',
           text: 'How clear and informative was the financial counselling you received?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q3',
           type: 'rating',
           text: 'Did the doctor or nurse explain your discharge summary clearly?',
           required: true,
-          options: ['Not at all', 'Somewhat', 'Mostly', 'Completely']
-        }
-      ]
-    },
-    {
-      id: 'doctor',
-      title: 'Doctor',
-      icon: '👨‍⚕️',
-      color: 'accent',
-      questions: [
+          options: ['1', '2', '3', '4', '5']
+        },
         {
           id: 'q4',
           type: 'rating',
           text: 'Was the discharge process completed in a timely manner?',
           required: true,
-          options: ['Yes', 'No', 'Some delay']
-        },
+          options: ['1', '2', '3', '4', '5']
+        }
+      ]
+    },
+    {
+      id: 'doctor',
+      title: 'Doctor Care',
+      icon: '👨‍⚕️',
+      color: 'accent',
+      questions: [
         {
           id: 'q5',
           type: 'rating',
           text: 'How attentive and caring was the doctor towards you?',
           required: true,
-          options: ['Not at all', 'Somewhat', 'Moderately', 'Very attentive']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q6',
           type: 'rating',
           text: 'Did the doctor clearly explain the reason for your admission?',
           required: true,
-          options: ['Yes', 'No', 'Partially']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q7',
           type: 'rating',
           text: 'Did the doctor provide timely updates about your treatment progress?',
           required: true,
-          options: ['Yes', 'No', 'Sometimes']
-        }
-      ]
-    },
-    {
-      id: 'floor_coordinator',
-      title: 'Floor Co-Ordinator',
-      icon: '👥',
-      color: 'quaternary',
-      questions: [
+          options: ['1', '2', '3', '4', '5']
+        },
         {
           id: 'q8',
           type: 'rating',
           text: 'Did the doctor manage your pain in a timely manner?',
           required: true,
-          options: ['Yes', 'No', 'Partially']
-        }
-      ]
-    },
-    {
-      id: 'food_beverages',
-      title: 'Food & Beverages',
-      icon: '🍽️',
-      color: 'primary',
-      questions: [
-        {
-          id: 'q9',
-          type: 'rating',
-          text: 'How attentive, helpful, and informative was the floor coordinator?',
-          required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-        },
-        {
-          id: 'q10',
-          type: 'rating',
-          text: 'How was the quality of the food served to you?',
-          required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-        },
-        {
-          id: 'q11',
-          type: 'rating',
-          text: 'Was your food served on time?',
-          required: true,
-          options: ['Always', 'Sometimes', 'Rarely', 'Never']
-        }
-      ]
-    },
-    {
-      id: 'dietician_counselling',
-      title: 'Dietician Counselling',
-      icon: '📋',
-      color: 'secondary',
-      questions: [
-        {
-          id: 'q12',
-          type: 'rating',
-          text: 'Did you receive dietician counselling during your stay?',
-          required: true,
-          options: ['Yes', 'No']
-        }
-      ]
-    },
-    {
-      id: 'housekeeping',
-      title: 'Housekeeping',
-      icon: '🧹',
-      color: 'accent',
-      questions: [
-        {
-          id: 'q13',
-          type: 'rating',
-          text: 'How clean were your room and washroom during your stay?',
-          required: true,
-          options: ['Very Unclean', 'Unclean', 'Clean', 'Very Clean', 'Spotless']
+          options: ['1', '2', '3', '4', '5']
         }
       ]
     },
     {
       id: 'nursing',
-      title: 'Nursing',
+      title: 'Nursing Care',
       icon: '👩‍⚕️',
       color: 'quaternary',
       questions: [
@@ -266,78 +216,92 @@ export const realQuestionsData: FormData = {
           type: 'rating',
           text: 'How attentive, prompt, and caring was the nursing staff?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q15',
           type: 'rating',
           text: 'Did you receive your medication on time?',
           required: true,
-          options: ['Always', 'Sometimes', 'Rarely', 'Never']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q16',
           type: 'rating',
           text: 'Was your privacy and confidentiality respected during your stay?',
           required: true,
-          options: ['Yes', 'No', 'Somewhat']
+          options: ['1', '2', '3', '4', '5']
         }
       ]
     },
     {
-      id: 'opd',
-      title: 'OPD',
-      icon: '🏥',
+      id: 'food_services',
+      title: 'Food & Services',
+      icon: '🍽️',
       color: 'primary',
+      questions: [
+        {
+          id: 'q10',
+          type: 'rating',
+          text: 'How was the quality of the food served to you?',
+          required: true,
+          options: ['1', '2', '3', '4', '5']
+        },
+        {
+          id: 'q11',
+          type: 'rating',
+          text: 'Was your food served on time?',
+          required: true,
+          options: ['1', '2', '3', '4', '5']
+        },
+        {
+          id: 'q13',
+          type: 'rating',
+          text: 'How clean were your room and washroom during your stay?',
+          required: true,
+          options: ['1', '2', '3', '4', '5']
+        }
+      ]
+    },
+    {
+      id: 'other_services',
+      title: 'Medical Services',
+      icon: '🔬',
+      color: 'secondary',
       questions: [
         {
           id: 'q17',
           type: 'rating',
           text: 'How reasonable was your waiting time to see the doctor in the OPD?',
           required: true,
-          options: ['Very Unreasonable', 'Unreasonable', 'Reasonable', 'Very Reasonable']
-        }
-      ]
-    },
-    {
-      id: 'other_services',
-      title: 'Other Services',
-      icon: '🔬',
-      color: 'secondary',
-      questions: [
+          options: ['1', '2', '3', '4', '5']
+        },
         {
           id: 'q18',
           type: 'rating',
           text: 'How would you rate the radiology services you received?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q19',
           type: 'rating',
           text: 'How would you rate the laboratory services you used?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
-        },
-        {
-          id: 'q20',
-          type: 'rating',
-          text: 'How would you rate the physiotherapy services?',
-          required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
         },
         {
           id: 'q21',
           type: 'rating',
           text: 'Was the prescribed medicine available at the pharmacy?',
           required: true,
-          options: ['Yes', 'No', 'Partially']
+          options: ['1', '2', '3', '4', '5']
         }
       ]
     },
     {
-      id: 'overall_hospital_experience',
-      title: 'Overall Hospital Experience',
+      id: 'overall_experience',
+      title: 'Overall Experience',
       icon: '⭐',
       color: 'accent',
       questions: [
@@ -346,79 +310,55 @@ export const realQuestionsData: FormData = {
           type: 'rating',
           text: 'How would you rate your overall hospital experience?',
           required: true,
-          options: ['Very Bad', 'Bad', 'Average', 'Good', 'Excellent']
-        }
-      ]
-    },
-    {
-      id: 'security',
-      title: 'Security',
-      icon: '🛡️',
-      color: 'quaternary',
-      questions: [
+          options: ['1', '2', '3', '4', '5']
+        },
         {
           id: 'q23',
           type: 'rating',
           text: 'How efficient and helpful was the security staff?',
           required: true,
-          options: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
+          options: ['1', '2', '3', '4', '5']
+        },
+        {
+          id: 'recommend',
+          type: 'rating',
+          text: 'How likely are you to recommend this hospital to others?',
+          required: true,
+          options: ['1', '2', '3', '4', '5']
+        },
+        {
+          id: 'feedback',
+          type: 'comment',
+          text: 'Any additional feedback or suggestions for improvement?',
+          required: false,
+          placeholder: 'Share your thoughts to help us improve our services...',
+          maxLength: 500
         }
       ]
     }
   ]
 };
 
-// API functions for future integration
+// API Service for future integration
 export const apiService = {
-  // Fetch patient data by ID
-  async getPatientData(patientId: string): Promise<PatientInfo> {
-    // TODO: Replace with actual API call
-    // return await fetch(`/api/patients/${patientId}`).then(res => res.json());
-    return samplePatient;
-  },
-
-  // Fetch survey questions by form type
-  async getSurveyQuestions(formType: string): Promise<FormData> {
-    // TODO: Replace with actual API call
-    // return await fetch(`/api/surveys/${formType}`).then(res => res.json());
-    return realQuestionsData;
-  },
-
   // Submit survey responses
   async submitSurveyResponses(data: {
     patient: any;
     formType: string;
     answers: Record<string, any>;
-  }): Promise<{ success: boolean; message: string }> {
+  }): Promise<{ success: boolean; message: string; surveyId?: string }> {
     // TODO: Replace with actual API call
-    // return await fetch('/api/surveys/submit', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data)
-    // }).then(res => res.json());
-    
     console.log('Survey submitted:', data);
-    return { success: true, message: 'Survey submitted successfully' };
-  },
-
-  // Get survey analytics/statistics
-  async getSurveyAnalytics(filters?: {
-    startDate?: string;
-    endDate?: string;
-    formType?: string;
-    location?: string;
-  }): Promise<any> {
-    // TODO: Replace with actual API call
-    // return await fetch('/api/surveys/analytics', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(filters)
-    // }).then(res => res.json());
     
-    return {
-      totalResponses: 0,
-      averageRatings: {},
-      completionRate: 0
-    };
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ 
+          success: true, 
+          message: 'Survey submitted successfully',
+          surveyId: Date.now().toString(36).toUpperCase()
+        });
+      }, 1000);
+    });
   }
 };
