@@ -17,8 +17,7 @@ const AccordionSection = ({
   isComplete, 
   onToggle, 
   answers, 
-  onAnswerChange,
-  onMarkComplete 
+  onAnswerChange
 }: {
   section: Section;
   isExpanded: boolean;
@@ -26,7 +25,6 @@ const AccordionSection = ({
   onToggle: () => void;
   answers: Record<string, any>;
   onAnswerChange: (questionId: string, field: string, value: string) => void;
-  onMarkComplete: () => void;
 }) => {
   const theme = colorThemes[section.color] || colorThemes.primary;
 
@@ -65,7 +63,7 @@ const AccordionSection = ({
         </div>
       </button>
 
-      {/* Expandable Content */}
+      {/* Expandable Content - NO COMPLETE BUTTON */}
       {isExpanded && (
         <div className="border-t border-gray-100 p-4 space-y-6 animate-slideDown">
           {section.questions.map((question, index) => {
@@ -130,14 +128,16 @@ const AccordionSection = ({
             );
           })}
           
-          {/* Section Complete Button */}
+          {/* Show completion status only */}
           {isComplete && (
-            <button
-              onClick={onMarkComplete}
-              className={`w-full py-3 px-4 rounded-xl font-semibold text-white bg-gradient-to-r ${theme.gradient} hover:shadow-lg transition-all duration-200`}
-            >
-              Mark {section.title} as Complete ✓
-            </button>
+            <div className="text-center py-2">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Section Complete
+              </span>
+            </div>
           )}
         </div>
       )}
@@ -156,22 +156,6 @@ export const AccordionDesign = ({
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [completedSections, setCompletedSections] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Auto-expand first incomplete section
-    const firstIncomplete = formData.sections.find(s => !completedSections.includes(s.id));
-    if (firstIncomplete && !expandedSections.includes(firstIncomplete.id)) {
-      setExpandedSections([firstIncomplete.id]);
-    }
-  }, [completedSections, formData.sections, expandedSections]);
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => 
-      prev.includes(sectionId) 
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  };
 
   const handleAnswerChange = (questionId: string, field: string, value: string) => {
     setAnswers(prev => ({
@@ -197,10 +181,43 @@ export const AccordionDesign = ({
     });
   };
 
-  const handleMarkComplete = (sectionId: string) => {
-    if (!completedSections.includes(sectionId)) {
-      setCompletedSections(prev => [...prev, sectionId]);
+  // Auto-expand next section and mark current as complete
+  useEffect(() => {
+    // Check which sections are now complete
+    const newlyCompletedSections: string[] = [];
+    formData.sections.forEach(section => {
+      if (isSectionComplete(section) && !completedSections.includes(section.id)) {
+        newlyCompletedSections.push(section.id);
+      }
+    });
+
+    if (newlyCompletedSections.length > 0) {
+      setCompletedSections(prev => [...prev, ...newlyCompletedSections]);
+
+      // Auto-expand next incomplete section
+      const allCompleted = [...completedSections, ...newlyCompletedSections];
+      const nextIncomplete = formData.sections.find(s => !allCompleted.includes(s.id));
+      
+      if (nextIncomplete && !expandedSections.includes(nextIncomplete.id)) {
+        // Close current expanded sections and open next
+        setExpandedSections([nextIncomplete.id]);
+      }
     }
+  }, [answers, formData.sections, completedSections, expandedSections]);
+
+  // Initial auto-expand first section
+  useEffect(() => {
+    if (expandedSections.length === 0 && formData.sections.length > 0) {
+      setExpandedSections([formData.sections[0].id]);
+    }
+  }, [formData.sections, expandedSections.length]);
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    );
   };
 
   const totalProgress = (completedSections.length / formData.sections.length) * 100;
@@ -243,11 +260,10 @@ export const AccordionDesign = ({
                 key={section.id}
                 section={section}
                 isExpanded={expandedSections.includes(section.id)}
-                isComplete={isSectionComplete(section)}
+                isComplete={completedSections.includes(section.id)}
                 onToggle={() => toggleSection(section.id)}
                 answers={answers}
                 onAnswerChange={handleAnswerChange}
-                onMarkComplete={() => handleMarkComplete(section.id)}
               />
             ))}
           </div>
